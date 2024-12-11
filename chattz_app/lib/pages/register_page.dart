@@ -1,4 +1,8 @@
+import 'package:chattz_app/pages/get_details_page.dart';
+import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/login_page.dart';
+import 'package:chattz_app/services/user_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -14,6 +18,77 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  void signUpUser() async {
+    // loading circle
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Center(
+              child: CircularProgressIndicator(
+            color: Colors.teal[900],
+          ));
+        });
+
+    // try creating the user
+    try {
+      if (_passwordController.text == _confirmPasswordController.text) {
+        UserCredential result = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+                email: _emailController.text,
+                password: _passwordController.text);
+
+        // create a map of the user details
+        Map<String, dynamic> userInfoMap = {
+          'Username': _nameController.text,
+          'Email': _emailController.text,
+          'Password': _passwordController.text,
+          'location': 'not-defined',
+          "cart": [],
+          'saved': [],
+          'total': '0.0'
+        };
+
+        // pop the loading circle
+        Navigator.pop(context);
+
+        // // try adding the user to the database
+        // await UserService().addUserDetails(userInfoMap, result.user!.uid);
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  GetDetailsPage(_nameController.text, _emailController.text),
+            ));
+      } else {
+        // pop the loading circle
+        Navigator.pop(context);
+
+        // show error message
+        showErrorMessage('Passwords don\'t match.');
+      }
+    } on FirebaseAuthException catch (e) {
+      // pop the loading circle
+      Navigator.pop(context);
+
+      // show error message
+      showErrorMessage(e.code);
+    }
+  }
+
+  void showErrorMessage(String errorMessage) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: Colors.teal[900],
+              title: Center(
+                  child: Text(
+                errorMessage,
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+              )));
+        });
+  }
 
   bool get isFormValid =>
       _nameController.text.isNotEmpty &&
@@ -165,6 +240,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         if (_formKey.currentState?.validate() ??
                                             false) {
                                           // Handle sign up logic
+                                          signUpUser();
                                         }
                                       }
                                     : null,
@@ -253,6 +329,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      cursorColor: Colors.teal[800],
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,

@@ -1,3 +1,4 @@
+import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,10 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
         context: context,
         builder: (context) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+              child: CircularProgressIndicator(
+            color: Colors.teal[900],
+          ));
         });
 
     // try to sign in
@@ -32,6 +36,11 @@ class _LoginPageState extends State<LoginPage> {
       // pop the loading circle
       // ignore: use_build_context_synchronously
       Navigator.pop(context);
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomePage(),
+          ));
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
       // ignore: use_build_context_synchronously
@@ -47,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-              backgroundColor: Colors.teal[800],
+              backgroundColor: Colors.teal[900],
               title: Center(
                   child: Text(
                 errorMessage,
@@ -70,28 +79,14 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      // appBar: AppBar(
-      //   backgroundColor:
-      //       Colors.transparent, // Make AppBar background transparent
-      //   elevation: 0, // Remove AppBar shadow
-      //   leading: IconButton(
-      //     icon: const Icon(Icons.arrow_back, color: Colors.white),
-      //     onPressed: () => Navigator.pop(context),
-      //   ),
-      // ),
       body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                // const Color(0xFF2D1F3D),
-                Colors.teal.shade900,
-                // Colors.teal.shade700,
-                // Colors.black,
-                Colors.black
-                // const Color(0xFF1D1128),
-              ],
+              colors: [Colors.teal.shade900, Colors.black],
             ),
           ),
           child: SafeArea(
@@ -305,6 +300,7 @@ class _LoginPageState extends State<LoginPage> {
   }) {
     return TextFormField(
       controller: controller,
+      cursorColor: Colors.teal[800],
       obscureText: obscureText,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

@@ -76,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.teal[900],
         leading: const BackButton(color: Colors.white),
         title: Row(
           children: [

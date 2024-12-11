@@ -27,6 +27,7 @@ class OnboardingPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // logo and name
                 const Row(
                   children: [
                     // Image.asset(
@@ -46,6 +47,8 @@ class OnboardingPage extends StatelessWidget {
                     ),
                   ],
                 ),
+
+                // some description
                 const SizedBox(height: 48),
                 const Text(
                   'Connect\nfriends\neasily &\nquickly',
@@ -56,6 +59,8 @@ class OnboardingPage extends StatelessWidget {
                     height: 1.1,
                   ),
                 ),
+
+                // some more description
                 const SizedBox(height: 16),
                 Text(
                   'Our chat app is the perfect way to stay\nconnected with friends and family.',
@@ -65,6 +70,8 @@ class OnboardingPage extends StatelessWidget {
                     height: 1.5,
                   ),
                 ),
+
+                // the social buttons for login
                 const SizedBox(height: 48),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -85,6 +92,8 @@ class OnboardingPage extends StatelessWidget {
                     ),
                   ],
                 ),
+
+                // OR divider
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -110,6 +119,8 @@ class OnboardingPage extends StatelessWidget {
                     ),
                   ],
                 ),
+
+                // sign up with mail button
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -118,7 +129,7 @@ class OnboardingPage extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LoginPage()));
+                              builder: (context) => const RegisterPage()));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
@@ -137,6 +148,8 @@ class OnboardingPage extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                // Existing Account - link to login page
                 const Spacer(),
                 Center(
                   child: TextButton(
@@ -144,7 +157,7 @@ class OnboardingPage extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const RegisterPage()));
+                              builder: (context) => const LoginPage()));
                     },
                     child: const Text.rich(
                       TextSpan(
