@@ -1,10 +1,12 @@
+import 'package:chattz_app/pages/get_details_page.dart';
 import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/onboarding.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatelessWidget {
-  const AuthPage({super.key});
+  bool gotDetails = false;
+  AuthPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +20,11 @@ class AuthPage extends StatelessWidget {
               // If user is logged in, go to home page
               return const HomePage();
             } else {
-              // If user is not logged in, go to onboarding page
-              return const OnboardingPage();
+              // If user is not logged in, go to onboarding page or the get details page
+              if (gotDetails) {}
+              return gotDetails
+                  ? const OnboardingPage()
+                  : const GetDetailsPage("", "");
             }
           }
 

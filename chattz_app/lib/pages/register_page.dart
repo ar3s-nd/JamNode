@@ -42,30 +42,25 @@ class _RegisterPageState extends State<RegisterPage> {
         Map<String, dynamic> userInfoMap = {
           'Username': _nameController.text,
           'Email': _emailController.text,
-          'Password': _passwordController.text,
-          'location': 'not-defined',
-          "cart": [],
-          'saved': [],
-          'total': '0.0'
+          "College Name": "",
+          "College Id": "",
+          "Roles": [],
+          "Band Id": "",
         };
 
         // pop the loading circle
-        Navigator.pop(context);
+        if (mounted) {
+          Navigator.pop(context);
+        }
 
         // // try adding the user to the database
-        // await UserService().addUserDetails(userInfoMap, result.user!.uid);
+        await UserService().addUserDetails(userInfoMap, result.user!.uid);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) =>
                   GetDetailsPage(_nameController.text, _emailController.text),
             ));
-      } else {
-        // pop the loading circle
-        Navigator.pop(context);
-
-        // show error message
-        showErrorMessage('Passwords don\'t match.');
       }
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
