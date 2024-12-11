@@ -9,13 +9,15 @@ class OnboardingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF2D1F3D),
-              Color(0xFF1D1128),
+              const Color(0xFF2D1F3D),
+              Colors.teal.shade900,
+              Colors.black,
+              // const Color(0xFF1D1128),
             ],
           ),
         ),
