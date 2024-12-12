@@ -1,4 +1,4 @@
-import 'package:chattz_app/pages/home_page.dart';
+import 'package:chattz_app/pages/auth_page.dart';
 import 'package:chattz_app/pages/register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const HomePage(),
+            builder: (context) => const AuthPage(),
           ));
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.transparent,
       body: Container(
           height: MediaQuery.of(context).size.height,
-          width: double.infinity,
+          width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -279,9 +279,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Positioned(
                   top: 16,
-                  left: 16,
+                  left: 8,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back_rounded,
+                        color: Colors.white),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),

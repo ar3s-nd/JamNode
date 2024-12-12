@@ -1,5 +1,4 @@
 import 'package:chattz_app/pages/get_details_page.dart';
-import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/login_page.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,12 +39,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
         // create a map of the user details
         Map<String, dynamic> userInfoMap = {
-          'Username': _nameController.text,
+          'Name': _nameController.text,
           'Email': _emailController.text,
           "College Name": "",
           "College Id": "",
           "Roles": [],
-          "Band Id": "",
+          "Got Details": false,
         };
 
         // pop the loading circle
@@ -53,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Navigator.pop(context);
         }
 
-        // // try adding the user to the database
+        // try adding the user to the database
         await UserService().addUserDetails(userInfoMap, result.user!.uid);
         Navigator.pushReplacement(
             context,
@@ -89,7 +88,9 @@ class _RegisterPageState extends State<RegisterPage> {
       _nameController.text.isNotEmpty &&
       _emailController.text.isNotEmpty &&
       _passwordController.text.isNotEmpty &&
-      _confirmPasswordController.text.isNotEmpty;
+      _confirmPasswordController.text.isNotEmpty &&
+      _passwordController.text.length >= 8 &&
+      _confirmPasswordController.text.length >= 8;
 
   @override
   void dispose() {
@@ -105,6 +106,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -301,9 +304,10 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               Positioned(
                 top: 16,
-                left: 16,
+                left: 8,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon:
+                      const Icon(Icons.arrow_back_rounded, color: Colors.white),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),

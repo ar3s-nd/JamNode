@@ -1,12 +1,24 @@
+import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/pages/get_details_page.dart';
 import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/onboarding.dart';
+import 'package:chattz_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AuthPage extends StatelessWidget {
+class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
+
+  @override
+  _AuthPageState createState() => _AuthPageState();
+}
+
+class _AuthPageState extends State<AuthPage> {
   bool gotDetails = false;
-  AuthPage({super.key});
+
+  Future<Map<String, dynamic>?> checkForDetails(String id) async {
+    return await UserService().getUserDetails(id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,14 +29,30 @@ class AuthPage extends StatelessWidget {
           // Automatically navigates when user logs in or logs out
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
-              // If user is logged in, go to home page
-              return const HomePage();
+              // If user is logged in, check for details
+              return FutureBuilder<Map<String, dynamic>?>(
+                future: checkForDetails(FirebaseAuth.instance.currentUser!.uid),
+                builder: (context, userDetailsSnapshot) {
+                  if (userDetailsSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (userDetailsSnapshot.hasData &&
+                      userDetailsSnapshot.data?["Got Details"]) {
+                    // If user details are found, go to home page
+                    return const ChatPage();
+                    // return const HomePage();
+                  } else {
+                    // If user details are not found, go to get details page
+                    return GetDetailsPage(
+                      userDetailsSnapshot.data?['Name'] ?? '',
+                      userDetailsSnapshot.data?['Email'] ?? '',
+                    );
+                  }
+                },
+              );
             } else {
-              // If user is not logged in, go to onboarding page or the get details page
-              if (gotDetails) {}
-              return gotDetails
-                  ? const OnboardingPage()
-                  : const GetDetailsPage("", "");
+              // If user is not logged in, go to onboarding page
+              return const OnboardingPage();
             }
           }
 
