@@ -1,4 +1,3 @@
-import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/pages/get_details_page.dart';
 import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/onboarding.dart';
@@ -37,14 +36,14 @@ class _AuthPageState extends State<AuthPage> {
                       ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (userDetailsSnapshot.hasData &&
-                      userDetailsSnapshot.data?["Got Details"]) {
+                      userDetailsSnapshot.data?["gotDetails"]) {
                     // If user details are found, go to home page
                     return const HomePage();
                   } else {
                     // If user details are not found, go to get details page
                     return GetDetailsPage(
-                      userDetailsSnapshot.data?['Name'] ?? '',
-                      userDetailsSnapshot.data?['Email'] ?? '',
+                      userDetailsSnapshot.data?['name'] ?? '',
+                      userDetailsSnapshot.data?['email'] ?? '',
                     );
                   }
                 },

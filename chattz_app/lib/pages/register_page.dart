@@ -38,11 +38,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 password: _passwordController.text);
         // create a map of the user details
         Map<String, dynamic> userInfoMap = {
-          'Name': _nameController.text,
-          'Email': _emailController.text,
-          "College Name": "",
-          "College Id": "",
-          "Got Details": false,
+          'name': _nameController.text,
+          'email': _emailController.text,
+          "collegeName": "",
+          "collegeId": "",
+          "gotDetails": false,
         };
 
         // pop the loading circle
@@ -70,16 +70,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void showErrorMessage(String errorMessage) {
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-              backgroundColor: Colors.teal[900],
-              title: Center(
-                  child: Text(
-                errorMessage,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-              )));
-        });
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.teal[900],
+          title: Center(
+            child: Text(
+              errorMessage,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   bool get isFormValid =>

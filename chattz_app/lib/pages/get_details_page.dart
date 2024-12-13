@@ -1,3 +1,4 @@
+import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/auth_page.dart';
 import 'package:chattz_app/pages/onboarding.dart';
 import 'package:chattz_app/services/firestore_services.dart';
@@ -20,7 +21,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   final _emailController = TextEditingController();
   final _collegeNameController = TextEditingController();
   final _rollNumberController = TextEditingController();
-  final List<String> _selectedRoles = [];
+  List<String> _selectedRoles = [];
   List<String> imageUrls = [
     "https://img.freepik.com/free-psd/3d-icon-social-media-app_23-2150049569.jpg?t=st=1734021272~exp=1734024872~hmac=e1631345b981bb44b56fa08ae2ed84a3c155df03ac3e688f117ddf8701e24976&w=826"
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQttE9sxpEu1EoZgU2lUF_HtygNLCaz2rZYHg&s",
@@ -45,10 +46,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
 
   bool get isFormValid =>
       _collegeNameController.text.isNotEmpty &&
-      _rollNumberController.text.isNotEmpty
-      // &&
-      // _selectedRoles.isNotEmpty
-      ;
+      _rollNumberController.text.isNotEmpty &&
+      _selectedRoles.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -198,37 +197,15 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         //     });
                         //   },
                         // ),
-                        // _buildMultiSelectDropDownField(
-                        //   label: 'Courses',
-                        //   items: const [
-                        //     "Accordion",
-                        //     "Bagpipes",
-                        //     "Banjo",
-                        //     "Bass Guitar",
-                        //     "Cello",
-                        //     "Clarinet",
-                        //     "Double Bass",
-                        //     "Drums",
-                        //     "Fiddle",
-                        //     "Flute",
-                        //     "Guitar",
-                        //     "Keyboard",
-                        //     "Kora",
-                        //     "Piano",
-                        //     "Saxophone",
-                        //     "Sitar",
-                        //     "Steelpan",
-                        //     "Tabla",
-                        //     "Trombone",
-                        //     "Trumpet",
-                        //     "Violin"
-                        //   ],
-                        //   onConfirm: (values) {
-                        //     setState(() {
-                        //       _selectedRoles = values;
-                        //     });
-                        //   },
-                        // ),
+                        _buildMultiSelectDropDownField(
+                          label: 'Courses',
+                          items: roles,
+                          onConfirm: (values) {
+                            setState(() {
+                              _selectedRoles = values;
+                            });
+                          },
+                        ),
                         const SizedBox(height: 48),
                         SizedBox(
                           width: double.infinity,
@@ -251,15 +228,15 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
 
                                           // create a map of the user details
                                           Map<String, dynamic> userInfoMap = {
-                                            'Name': _nameController.text,
-                                            'Email': _emailController.text,
-                                            "College Name":
+                                            'name': _nameController.text,
+                                            'email': _emailController.text,
+                                            "collegeName":
                                                 _collegeNameController.text,
-                                            "College Id":
+                                            "collegeId":
                                                 _rollNumberController.text,
-                                            "Image URL": randomImageUrl,
-                                            "Got Details": true,
-                                            "Group Id": "",
+                                            "imageUrl": randomImageUrl,
+                                            "gotDetails": true,
+                                            "groupId": "",
                                           };
 
                                           // try adding the user to the database
@@ -287,7 +264,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Submit',
+                                  'Finish',
                                   style: TextStyle(
                                     color: isFormValid
                                         ? Colors.white

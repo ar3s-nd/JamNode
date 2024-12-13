@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:chattz_app/models/message.dart';
-import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
+import 'package:chattz_app/widgets/message_bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,13 +21,13 @@ String generateRandomString(int length) {
 
 Map<String, Map<String, dynamic>> userDetails = {
   FirebaseAuth.instance.currentUser!.uid: {
-    "College Id": 1,
-    "College Name": "College Name",
-    "Email": "Email",
-    "Got Details": false,
-    "Name": "Name",
+    "collegeId": 1,
+    "collegeName": "collegeName",
+    "email": "Email",
+    "gotDetails": false,
+    "name": "Name",
     "Phone Number": "Phone Number",
-    "Image URL":
+    "imageUrl":
         "https://img.freepik.com/free-psd/3d-icon-social-media-app_23-2150049569.jpg?t=st=1734021272~exp=1734024872~hmac=e1631345b981bb44b56fa08ae2ed84a3c155df03ac3e688f117ddf8701e24976&w=826",
   }
 };
@@ -46,19 +45,22 @@ class _ChatPageState extends State<ChatPage> {
   final String userId = FirebaseAuth.instance.currentUser!.uid;
   Map<String, List<Message>> _messages = {};
   Map<String, dynamic> groupDetails = {
-    "Group Name": "JamNode",
-    "Members": [],
-    "Image URL": "PZHO9s25AlVKpQEdvvu52Rmc0Xf2"
+    "name": "JamNode",
+    "members": [],
+    "imageUrl":
+        "https://img.freepik.com/free-vector/cartoon-character-design-illustration-professional-band_1362-117.jpg"
   };
 
   void checkDatabasePeriodically() {
     Timer.periodic(const Duration(seconds: 4), (timer) async {
       try {
-        bool randomBool = Random().nextBool();
+        List<String> uids = userDetails.keys.toList();
+        uids.shuffle();
+        String uid = uids[0];
         Message message = Message(
             id: DateTime.now().toString(),
             text: generateRandomString(10),
-            senderUserId: Random().nextBool() ? "user2" : "",
+            senderUserId: uid,
             timestamp: DateTime(2023));
         print(message.timestamp);
         await FirestoreServices().addMessage(userId, message);
@@ -68,13 +70,14 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void _listenToDatabaseChanges() async {
-    String groupId = await FirestoreServices().getGroupId(userId);
-
+  void listenToChatChanges() async {
+    String groupId = await FirestoreServices()
+        .getGroupId(FirebaseAuth.instance.currentUser!.uid);
+    debugPrint(groupId);
     FirebaseFirestore.instance
         .collection('Groups')
         .doc(groupId)
-        .collection('Chats') // Listen to changes in the "Chats" subcollection
+        .collection('chats') // Listen to changes in the "Chats" subcollection
         .snapshots()
         .listen(
       (snapshot) {
@@ -101,7 +104,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void setGroupDetails() async {
     groupDetails = await FirestoreServices()
-        .getGroupDetailsById(FirebaseAuth.instance.currentUser!.uid);
+        .getGroupDetailsByUserId(FirebaseAuth.instance.currentUser!.uid);
     if (mounted) {
       setState(() {});
     }
@@ -111,18 +114,19 @@ class _ChatPageState extends State<ChatPage> {
     userDetails = await UserService().getUserDetailsByGroupId();
     if (mounted) {
       setState(() {});
+      debugPrint(userDetails.toString());
     }
   }
 
   @override
   void initState() {
     super.initState();
-    setMessages();
     // checkDatabasePeriodically();
     // AutoMessageService().sendMessageToDataBasePeriodically();
+    setMessages();
     setGroupDetails();
     setUserDetails(FirebaseAuth.instance.currentUser!.uid);
-    _listenToDatabaseChanges();
+    listenToChatChanges();
   }
 
   @override
@@ -141,7 +145,7 @@ class _ChatPageState extends State<ChatPage> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(groupDetails["Image URL"]),
+              backgroundImage: NetworkImage(groupDetails["imageUrl"]),
               radius: 20,
             ),
             const SizedBox(width: 12),
@@ -149,7 +153,7 @@ class _ChatPageState extends State<ChatPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  groupDetails["Group Name"],
+                  groupDetails["name"],
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -157,7 +161,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
                 Text(
-                  "${groupDetails["Members"].length} members",
+                  "${groupDetails['members'].length} members",
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 12,
@@ -235,7 +239,9 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                           // Displaying the list of messages for the current date
                           ...messages.map(
-                              (message) => MessageBubble(message: message)),
+                            (message) => MessageBubble(
+                                userDetails: userDetails, message: message),
+                          ),
                         ],
                       );
                     },
@@ -305,10 +311,11 @@ class _ChatPageState extends State<ChatPage> {
                 color: Colors.white,
                 icon: const Icon(Icons.arrow_downward_rounded),
                 onPressed: () {
-                  setState(() {
-                    _scrollToBottom();
-                  });
-                  print("Scrolled to bottom");
+                  setState(
+                    () {
+                      _scrollToBottom();
+                    },
+                  );
                 },
               ),
             ),
@@ -342,139 +349,4 @@ class _ChatPageState extends State<ChatPage> {
         date1.month == date2.month &&
         date1.day == date2.day;
   }
-}
-
-class MessageBubble extends StatelessWidget {
-  final Message message;
-
-  const MessageBubble({
-    super.key,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment:
-            message.senderUserId == FirebaseAuth.instance.currentUser!.uid
-                ? MainAxisAlignment.end
-                : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (message.senderUserId !=
-              FirebaseAuth.instance.currentUser!.uid) ...[
-            CircleAvatar(
-              backgroundImage:
-                  NetworkImage(userDetails[message.senderUserId]!["Image URL"]),
-              radius: 16,
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  message.senderUserId == FirebaseAuth.instance.currentUser!.uid
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: message.senderUserId ==
-                            FirebaseAuth.instance.currentUser!.uid
-                        ? Colors.teal[700]
-                        : Colors.grey[800],
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: message.isAudio
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.play_circle_fill,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 150,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: CustomPaint(
-                                painter: WaveformPainter(),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              message.audioDuration!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text(
-                          message.text,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')} ${message.timestamp.hour >= 12 ? 'AM' : 'PM'}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class WaveformPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    final width = size.width;
-    final height = size.height;
-    const segmentWidth = 3.0;
-    const gap = 2.0;
-    final segments = (width / (segmentWidth + gap)).floor();
-
-    for (var i = 0; i < segments; i++) {
-      final x = i * (segmentWidth + gap);
-      final normalizedHeight = _generateRandomHeight(height);
-      final startY = (height - normalizedHeight) / 2;
-      final endY = startY + normalizedHeight;
-
-      canvas.drawLine(
-        Offset(x, startY),
-        Offset(x, endY),
-        paint,
-      );
-    }
-  }
-
-  double _generateRandomHeight(double maxHeight) {
-    // This is a simplified version - you would want to use actual audio data
-    return maxHeight * (0.3 + (DateTime.now().millisecond % 7) / 10);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
