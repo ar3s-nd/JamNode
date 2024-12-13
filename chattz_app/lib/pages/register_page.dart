@@ -36,14 +36,12 @@ class _RegisterPageState extends State<RegisterPage> {
             .createUserWithEmailAndPassword(
                 email: _emailController.text,
                 password: _passwordController.text);
-
         // create a map of the user details
         Map<String, dynamic> userInfoMap = {
           'Name': _nameController.text,
           'Email': _emailController.text,
           "College Name": "",
           "College Id": "",
-          "Roles": [],
           "Got Details": false,
         };
 

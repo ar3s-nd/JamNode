@@ -17,7 +17,7 @@ class _AuthPageState extends State<AuthPage> {
   bool gotDetails = false;
 
   Future<Map<String, dynamic>?> checkForDetails(String id) async {
-    return await UserService().getUserDetails(id);
+    return await UserService().getUserDetailsById(id);
   }
 
   @override
@@ -39,8 +39,7 @@ class _AuthPageState extends State<AuthPage> {
                   } else if (userDetailsSnapshot.hasData &&
                       userDetailsSnapshot.data?["Got Details"]) {
                     // If user details are found, go to home page
-                    return const ChatPage();
-                    // return const HomePage();
+                    return const HomePage();
                   } else {
                     // If user details are not found, go to get details page
                     return GetDetailsPage(

@@ -21,6 +21,13 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   final _collegeNameController = TextEditingController();
   final _rollNumberController = TextEditingController();
   final List<String> _selectedRoles = [];
+  List<String> imageUrls = [
+    "https://img.freepik.com/free-psd/3d-icon-social-media-app_23-2150049569.jpg?t=st=1734021272~exp=1734024872~hmac=e1631345b981bb44b56fa08ae2ed84a3c155df03ac3e688f117ddf8701e24976&w=826"
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQttE9sxpEu1EoZgU2lUF_HtygNLCaz2rZYHg&s",
+    "https://cdn-icons-png.flaticon.com/512/1053/1053244.png",
+    "https://cdn.vectorstock.com/i/1000v/92/16/default-profile-picture-avatar-user-icon-vector-46389216.jpg",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-wLGEqZy7Akjn0ZMf3qYTxNWZZMMimodTfA&s",
+  ];
 
   @override
   void initState() {
@@ -239,6 +246,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                         if (_formKey.currentState?.validate() ??
                                             false) {
                                           // Handle form submission logic
+                                          String randomImageUrl =
+                                              (imageUrls..shuffle()).first;
 
                                           // create a map of the user details
                                           Map<String, dynamic> userInfoMap = {
@@ -248,7 +257,9 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                                 _collegeNameController.text,
                                             "College Id":
                                                 _rollNumberController.text,
-                                            "Got Details": true
+                                            "Image URL": randomImageUrl,
+                                            "Got Details": true,
+                                            "Group Id": "",
                                           };
 
                                           // try adding the user to the database

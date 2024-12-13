@@ -1,7 +1,7 @@
-import 'package:chattz_app/pages/chat_page.dart';
+import 'dart:async';
+
+import 'package:chattz_app/models/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 
 class FirestoreServices {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -14,8 +14,6 @@ class FirestoreServices {
           .toList();
       return roles;
     } catch (e) {
-      // Use a logging framework instead of print
-      // Example: Logger().e(e);
       return [];
     }
   }
@@ -35,59 +33,47 @@ class FirestoreServices {
       await batch.commit();
     } catch (e) {
       // Use a logging framework instead of print
-      // Example: Logger().e(e);
+      // print(e.toString());
     }
   }
 
-  Future<List<Message>> getChats(String userId) async {
-    for (int i = 0; i < 100; i++) {
-      if (kDebugMode) {
-        print('World');
-      }
-    }
+  Future<Map<String, List<Message>>> getChats(String userId) async {
+    Map<String, List<Message>> chatsByDate = {};
     try {
-      DocumentSnapshot userSnapshot =
-          await _firestore.collection('Users').doc(userId).get();
-      if (userSnapshot.exists && userSnapshot.data() != null) {
-        Map<String, dynamic> userData =
-            userSnapshot.data() as Map<String, dynamic>;
-        String? groupId = userData['Group Id'] as String?;
-        if (groupId != null && groupId.isNotEmpty) {
-          DocumentSnapshot groupSnapshot =
-              await _firestore.collection('Groups').doc(groupId).get();
-          if (groupSnapshot.exists && groupSnapshot.data() != null) {
-            Map<String, dynamic> groupData =
-                groupSnapshot.data() as Map<String, dynamic>;
-            List<dynamic> messagesData = groupData['messages'] as List<dynamic>;
-            List<Message> messages = messagesData.map((messageData) {
-              return Message(
-                id: messageData['id'] as String,
-                text: messageData['text'] as String,
-                isAudio: messageData['isAudio'] as bool,
-                audioUrl: messageData['audioUrl'] as String?,
-                audioDuration: messageData['audioDuration'] as String?,
-                senderUserId: messageData['senderUserId'] as String?,
-                timestamp: DateTime.parse(messageData['timestamp'] as String),
-              );
-            }).toList();
-            messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-            for (int i = 0; i < 100; i++) {
-              if (kDebugMode) {
-                print('World');
-              }
-            }
-            return messages;
-          }
+      String groupId = await getGroupId(userId);
+      if (groupId.isNotEmpty) {
+        QuerySnapshot chatSnapshots = await _firestore
+            .collection('Groups')
+            .doc(groupId)
+            .collection('Chats')
+            .get();
+
+        for (QueryDocumentSnapshot chatDoc in chatSnapshots.docs) {
+          String date = chatDoc.id;
+          Map<String, dynamic> chatData =
+              chatDoc.data() as Map<String, dynamic>;
+          List<dynamic> messagesData = chatData['message'] as List<dynamic>;
+
+          List<Message> messages = messagesData.map((messageData) {
+            return Message(
+              id: messageData['id'] as String,
+              text: messageData['text'] as String,
+              isAudio: messageData['isAudio'] as bool,
+              audioUrl: messageData['audioUrl'] as String?,
+              audioDuration: messageData['audioDuration'] as String?,
+              senderUserId: messageData['senderUserId'] as String?,
+              timestamp: DateTime.parse(messageData['timestamp'] as String),
+            );
+          }).toList();
+          chatsByDate[date] = messages;
         }
       }
     } catch (e) {
       // Use a logging framework instead of print
-      print(e.toString());
+      // print(e.toString());
     }
-    for (int i = 0; i < 100; i++) {
-      print('Hello');
-    }
-    return [];
+
+    return chatsByDate;
   }
 
   Future<void> updateChat(String userId, List<Message> messages) async {
@@ -130,8 +116,13 @@ class FirestoreServices {
     try {
       String groupId = await getGroupId(userId);
       if (groupId.isNotEmpty) {
-        DocumentReference groupDocRef =
-            _firestore.collection('Groups').doc(groupId);
+        String date = message.timestamp.toIso8601String().split('T').first;
+
+        DocumentReference chatDocRef = _firestore
+            .collection('Groups')
+            .doc(groupId)
+            .collection('Chats')
+            .doc(date);
 
         Map<String, dynamic> messageData = {
           'id': message.id,
@@ -143,8 +134,17 @@ class FirestoreServices {
           'timestamp': message.timestamp.toIso8601String(),
         };
 
-        await groupDocRef.update({
-          'messages': FieldValue.arrayUnion([messageData])
+        await _firestore.runTransaction((transaction) async {
+          DocumentSnapshot chatDocSnapshot = await transaction.get(chatDocRef);
+          if (chatDocSnapshot.exists) {
+            transaction.update(chatDocRef, {
+              'message': FieldValue.arrayUnion([messageData])
+            });
+          } else {
+            transaction.set(chatDocRef, {
+              'message': [messageData]
+            });
+          }
         });
       }
     } catch (e) {
@@ -170,23 +170,20 @@ class FirestoreServices {
     return '';
   }
 
-  // void listenToDatabaseChanges() async {
-  //   String groupId = await getGroupId(FirebaseAuth.instance.currentUser!.uid);
-  //   FirebaseFirestore.instance.collection('Groups').snapshots().listen(
-  //     (snapshot) {
-  //       for (var change in snapshot.docChanges) {
-  //         if (change.type == DocumentChangeType.added) {
-  //           print("New document added: ${change.doc.data()}");
-  //         } else if (change.type == DocumentChangeType.modified) {
-  //           print("Document modified: ${change.doc.data()}");
-  //         } else if (change.type == DocumentChangeType.removed) {
-  //           print("Document removed: ${change.doc.data()}");
-  //         }
-  //       }
-  //     },
-  //     onError: (error) {
-  //       print("Error listening to database changes: $error");
-  //     },
-  //   );
-  // }
+  Future<Map<String, dynamic>> getGroupDetailsById(String userId) async {
+    try {
+      String groupId = await getGroupId(userId);
+      if (groupId.isNotEmpty) {
+        DocumentSnapshot groupSnapshot =
+            await _firestore.collection('Groups').doc(groupId).get();
+        if (groupSnapshot.exists && groupSnapshot.data() != null) {
+          return groupSnapshot.data() as Map<String, dynamic>;
+        }
+      }
+    } catch (e) {
+      // Use a logging framework instead of print
+      // Example: Logger().e(e);
+    }
+    return <String, dynamic>{}; // Return an empty map if there is an error
+  }
 }
