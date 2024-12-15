@@ -37,6 +37,15 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
     super.dispose();
   }
 
+  void pushReplacement() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AuthPage(),
+      ),
+    );
+  }
+
   bool get isFormValid =>
       _nameController.text.isNotEmpty &&
       _emailController.text.isNotEmpty &&
@@ -205,12 +214,6 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                               userInfoMap,
                                               FirebaseAuth
                                                   .instance.currentUser!.uid);
-
-                                          Navigator.pushReplacement(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const AuthPage()));
                                         }
                                       }
                                     : null,

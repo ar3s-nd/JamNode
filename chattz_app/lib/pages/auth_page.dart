@@ -9,10 +9,10 @@ class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
   @override
-  _AuthPageState createState() => _AuthPageState();
+  AuthPageState createState() => AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
+class AuthPageState extends State<AuthPage> {
   bool gotDetails = false;
 
   Future<Map<String, dynamic>?> checkForDetails(String id) async {

@@ -35,19 +35,30 @@ class _LoginPageState extends State<LoginPage> {
 
       // pop the loading circle
       // ignore: use_build_context_synchronously
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const AuthPage(),
-          ));
+      checkPop();
+      pushReplacement();
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
       // ignore: use_build_context_synchronously
-      Navigator.pop(context);
+      checkPop();
 
       // show error message
       showErrorMessage(e.code);
+    }
+  }
+
+  void pushReplacement() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AuthPage(),
+      ),
+    );
+  }
+
+  void checkPop() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
     }
   }
 
@@ -283,7 +294,9 @@ class _LoginPageState extends State<LoginPage> {
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back_rounded,
                         color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      checkPop();
+                    },
                   ),
                 ),
               ],

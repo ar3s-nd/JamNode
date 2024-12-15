@@ -26,10 +26,9 @@ class AutoMessageService {
             text: generateRandomString(20),
             senderUserId: userId,
             timestamp: DateTime(2023));
-        print("Sending message: ${message.text}");
         await FirestoreServices().addMessage(userId!, message);
       } catch (e) {
-        print("Error checking database: $e");
+        // Use a logging framework instead of print
       }
     });
   }

@@ -127,7 +127,7 @@ class FirestoreServices {
             return Message(
               id: messageData['id'] as String,
               text: messageData['text'] as String,
-              isAudio: messageData['isAudio'] as bool,
+              isLog: messageData['isLog'] as bool,
               audioUrl: messageData['audioUrl'] as String?,
               audioDuration: messageData['audioDuration'] as String?,
               senderUserId: messageData['senderUserId'] as String?,
@@ -157,11 +157,11 @@ class FirestoreServices {
         Map<String, dynamic> messageData = {
           'id': message.id,
           'text': message.text,
-          'isAudio': message.isAudio,
           'audioUrl': message.audioUrl,
           'audioDuration': message.audioDuration,
           'senderUserId': message.senderUserId,
           'timestamp': message.timestamp.toIso8601String(),
+          'isLog': message.isLog,
         };
 
         await _firestore.runTransaction((transaction) async {
@@ -228,5 +228,28 @@ class FirestoreServices {
       // Example: Logger().e(e);
     }
     return groupDetails;
+  }
+
+  Future<void> updateGroupDetails(
+      String groupId, Map<String, dynamic> groupDetails) async {
+    try {
+      if (groupId.isNotEmpty) {
+        await _firestore.collection('Groups').doc(groupId).update(groupDetails);
+      }
+    } catch (e) {
+      // Use a logging framework instead of print
+      // Example: Logger().e(e);
+    }
+  }
+
+  Future<void> deleteGroup(String groupId) async {
+    try {
+      if (groupId.isNotEmpty) {
+        await _firestore.collection('Groups').doc(groupId).delete();
+      }
+    } catch (e) {
+      // Use a logging framework instead of print
+      // Example: Logger().e(e);
+    }
   }
 }

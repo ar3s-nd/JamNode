@@ -1,5 +1,4 @@
 import 'package:chattz_app/components/image_circle.dart';
-import 'package:chattz_app/components/waveform_painter.dart';
 import 'package:chattz_app/models/message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -41,19 +40,6 @@ class MessageBubble extends StatelessWidget {
                 Colors.teal,
               ],
             ),
-            // CircleAvatar(
-            //   radius: 20,
-            //   backgroundColor: Colors.tealAccent.shade400,
-            //   child: Text(
-            //     userDetails[message.senderUserId]!['name'][0].toUpperCase() ??
-            //         "G",
-            //     style: const TextStyle(
-            //       color: Colors.black,
-            //       fontSize: 20,
-            //       fontWeight: FontWeight.bold,
-            //     ),
-            //   ),
-            // ),
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -74,42 +60,13 @@ class MessageBubble extends StatelessWidget {
                           isCurrentUser ? Colors.teal[700] : Colors.grey[800],
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: message.isAudio
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.play_circle_fill,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 150,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: CustomPaint(
-                                  painter: WaveformPainter(),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                message.audioDuration!,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          )
-                        : Text(
-                            message.text,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
+                    child: Text(
+                      message.text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Align(

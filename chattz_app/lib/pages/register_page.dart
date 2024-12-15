@@ -46,25 +46,33 @@ class _RegisterPageState extends State<RegisterPage> {
         };
 
         // pop the loading circle
-        if (mounted) {
-          Navigator.pop(context);
-        }
+        checkPop();
 
         // try adding the user to the database
         await UserService().addUserDetails(userInfoMap, result.user!.uid);
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  GetDetailsPage(_nameController.text, _emailController.text),
-            ));
       }
     } on FirebaseAuthException catch (e) {
       // pop the loading circle
-      Navigator.pop(context);
+      checkPop();
 
       // show error message
       showErrorMessage(e.code);
+    }
+  }
+
+  void pushReplacement() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            GetDetailsPage(_nameController.text, _emailController.text),
+      ),
+    );
+  }
+
+  void checkPop() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
     }
   }
 
@@ -310,10 +318,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 top: 16,
                 left: 8,
                 child: IconButton(
-                  icon:
-                      const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
+                    icon: const Icon(Icons.arrow_back_rounded,
+                        color: Colors.white),
+                    onPressed: () {
+                      checkPop();
+                    }),
               ),
             ],
           ),

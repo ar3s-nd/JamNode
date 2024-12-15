@@ -31,7 +31,9 @@ class UserService {
           'roles': [],
         };
       }
-    } catch (e) {}
+    } catch (e) {
+      //  Use a logging framework instead of print
+    }
     return Future.value({
       'collegeId': 'College Id',
       'collegeName': 'College Name',
@@ -55,7 +57,9 @@ class UserService {
             Map<String, dynamic>.from(element.data() as Map<String, dynamic>);
       }
       return userMap;
-    } catch (e) {}
+    } catch (e) {
+      // Use a logging framework instead of print
+    }
     return {};
   }
 }

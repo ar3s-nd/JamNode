@@ -28,65 +28,89 @@ class GroupListCard extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.teal.shade800,
+                Colors.teal.shade900,
                 Colors.grey.shade900,
               ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(2, 4),
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 15,
+                offset: const Offset(3, 6),
               ),
             ],
+            border: Border.all(
+              color: Colors.teal.shade700.withOpacity(0.8),
+              width: 0.9,
+            ),
           ),
           child: ListTile(
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            leading: ImageCircle(
-              letter: group['name'][0].toUpperCase(),
-              circleRadius: 25,
-              fontSize: 30,
-              colors: [Colors.teal.shade400, Colors.teal],
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            leading: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.teal.shade700,
+                ),
+                ImageCircle(
+                  letter: group['name'][0].toUpperCase(),
+                  circleRadius: 24,
+                  fontSize: 24,
+                  colors: [Colors.teal.shade800, Colors.teal.shade600],
+                ),
+              ],
             ),
-            // CircleAvatar(
-            //   radius: 25,
-            //   backgroundColor: Colors.tealAccent.shade700,
-            //   child: Icon(
-            //     Icons.music_note,
-            //     size: 30,
-            //     color: Colors.grey.shade900,
-            //   ),
-            // ),
             title: Text(
               group['name'],
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            subtitle: Text(
-              '${group['members'].length} joined',
-              style: TextStyle(
-                color: Colors.grey.shade400,
-                fontSize: 14,
-              ),
+            subtitle: Row(
+              children: [
+                Icon(Icons.group, size: 16, color: Colors.teal.shade300),
+                const SizedBox(width: 5),
+                Text(
+                  '${group['members'].length} joined',
+                  style: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
-            trailing: Icon(
-              Icons.chevron_right,
-              size: 28,
-              color: Colors.teal.shade300,
+            trailing: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.teal.shade800,
+                    Colors.teal.shade500,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: const Icon(
+                Icons.chevron_right,
+                size: 26,
+                color: Colors.white,
+              ),
             ),
           ),
         ),

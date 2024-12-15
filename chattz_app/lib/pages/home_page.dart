@@ -81,22 +81,33 @@ class _HomePageState extends State<HomePage> {
 
       newGroup = await FirestoreServices().createGroup(user, newGroup);
 
-      Navigator.pop(context);
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatPage(
-              groupDetails: newGroup,
-            ),
-          ));
+      checkPop();
+      pushNavigator(newGroup);
     } catch (e) {
       // show error message
       showErrorMessage(e.toString());
     }
   }
 
+  void checkPop() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
+  void pushNavigator(Map<String, dynamic> newGroup) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatPage(
+          groupDetails: newGroup,
+        ),
+      ),
+    );
+  }
+
   void showErrorMessage(String errorMessage) {
-    Navigator.pop(context);
+    checkPop();
     showDialog(
       context: context,
       builder: (context) {

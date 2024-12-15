@@ -1,7 +1,10 @@
 import 'package:chattz_app/components/image_circle.dart';
+import 'package:chattz_app/pages/chat_page.dart';
+import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:chattz_app/widgets/user_list_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class GroupDetailsPage extends StatefulWidget {
@@ -15,6 +18,140 @@ class GroupDetailsPage extends StatefulWidget {
 class _GroupDetailsPageState extends State<GroupDetailsPage> {
   Map<String, dynamic> groupDetails = {};
   Map<String, Map<String, dynamic>> members = {};
+  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+  void joinGroup() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+            child: CircularProgressIndicator(
+          color: Colors.teal[900],
+        ));
+      },
+    );
+
+    try {
+      Map<String, dynamic> user =
+          await UserService().getUserDetailsById(currentUserId);
+      if (user['groups'].length >= 3) {
+        throw 'You can only be a part of max 3 groups at a time';
+      }
+      Map<String, dynamic> updatedUser = {
+        'groups': [...user['groups'], groupDetails['groupId']]
+      };
+
+      Map<String, dynamic> updatedGroup = {
+        'members': [...groupDetails['members'], currentUserId]
+      };
+
+      await UserService().updateProfile(currentUserId, updatedUser);
+      await FirestoreServices()
+          .updateGroupDetails(groupDetails['groupId'], updatedGroup);
+      checkPop();
+      pushReplacementChatPage();
+    } catch (e) {
+      // show error message
+      showErrorMessage(e.toString());
+    }
+  }
+
+  void pushReplacementChatPage() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatPage(
+          groupDetails: groupDetails,
+        ),
+      ),
+    );
+  }
+
+  void pushReplacementHomePage() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomePage(),
+      ),
+    );
+  }
+
+  void checkPop() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
+  void leaveGroup() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+            child: CircularProgressIndicator(
+          color: Colors.teal[900],
+        ));
+      },
+    );
+
+    try {
+      Map<String, dynamic> user =
+          await UserService().getUserDetailsById(currentUserId);
+
+      groupDetails['members'].remove(currentUserId);
+      user['groups'].remove(groupDetails['groupId']);
+      groupDetails['admins'].remove(currentUserId);
+      Map<String, dynamic> updatedUser = {'groups': user['groups']};
+      await UserService().updateProfile(currentUserId, updatedUser);
+
+      if (groupDetails['admins'].isEmpty) {
+        if (groupDetails['members'].isEmpty) {
+          await FirestoreServices().deleteGroup(groupDetails['groupId']);
+        } else {
+          groupDetails['admins'].add(groupDetails['members'][0]);
+          Map<String, dynamic> updatedGroup = {
+            'members': groupDetails['members'],
+            'admins': groupDetails['admins'],
+          };
+
+          await FirestoreServices()
+              .updateGroupDetails(groupDetails['groupId'], updatedGroup);
+        }
+      } else {
+        Map<String, dynamic> updatedGroup = {
+          'members': groupDetails['members'],
+          'admins': groupDetails['admins'],
+        };
+
+        await FirestoreServices()
+            .updateGroupDetails(groupDetails['groupId'], updatedGroup);
+      }
+      checkPop();
+      checkPop();
+      checkPop();
+      pushReplacementHomePage();
+    } catch (e) {
+      // show error message
+      showErrorMessage(e.toString());
+    }
+  }
+
+  void showErrorMessage(String errorMessage) {
+    checkPop();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.teal[900],
+          title: Center(
+            child: Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void setGroupDetails() async {
     if (mounted && groupDetails.isEmpty) {
@@ -65,9 +202,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         leading: BackButton(
           color: Colors.white,
           onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
+            checkPop();
           },
         ),
         title: RichText(
@@ -122,28 +257,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                         fontSize: 30,
                         colors: [Colors.tealAccent.shade200, Colors.teal],
                       ),
-                      // Container(
-                      //   decoration: BoxDecoration(
-                      //     gradient: LinearGradient(
-                      //       colors: [Colors.tealAccent.shade200, Colors.teal],
-                      //       begin: Alignment.topLeft,
-                      //       end: Alignment.bottomRight,
-                      //     ),
-                      //     shape: BoxShape.circle,
-                      //   ),
-                      //   child: CircleAvatar(
-                      //     radius: 40,
-                      //     backgroundColor: Colors.transparent,
-                      //     child: Text(
-                      //       groupDetails['name'][0].toUpperCase(),
-                      //       style: const TextStyle(
-                      //         color: Colors.black,
-                      //         fontSize: 30,
-                      //         fontWeight: FontWeight.bold,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,6 +290,58 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                           ),
                         ],
                       ),
+                      const Spacer(),
+                      Center(
+                        child: SizedBox(
+                          height: 35,
+                          width: 100,
+                          // padding: const EdgeInsets.symmetric(horizontal: 40),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (groupDetails['members']
+                                  .contains(currentUserId)) {
+                                leaveGroup();
+                              } else {
+                                joinGroup();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: !groupDetails['members']
+                                      .contains(currentUserId)
+                                  ? Colors.teal.shade600
+                                  : Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 10,
+                              shadowColor: !groupDetails['members']
+                                      .contains(currentUserId)
+                                  ? Colors.teal.shade600
+                                  : Colors.red,
+                              // padding: const EdgeInsets.symmetric(
+                              //     horizontal: 32, vertical: 16),
+                            ),
+                            child:
+                                groupDetails['members'].contains(currentUserId)
+                                    ? const Text(
+                                        'Leave',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Join',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -250,6 +415,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Navigate to create a new group or any action
+          joinGroup();
         },
         backgroundColor: Colors.teal.shade600,
         child: const Icon(

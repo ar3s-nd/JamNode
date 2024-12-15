@@ -44,28 +44,6 @@ class UserListCard extends StatelessWidget {
                     fontSize: 20,
                     colors: [Colors.tealAccent.shade200, Colors.teal],
                   ),
-                  // Container(
-                  //   decoration: BoxDecoration(
-                  //     gradient: LinearGradient(
-                  //       colors: [Colors.tealAccent.shade200, Colors.teal],
-                  //       begin: Alignment.topLeft,
-                  //       end: Alignment.bottomRight,
-                  //     ),
-                  //     shape: BoxShape.circle,
-                  //   ),
-                  //   child: CircleAvatar(
-                  //     radius: 16,
-                  //     backgroundColor: Colors.transparent,
-                  //     child: Text(
-                  //       member['name'][0].toUpperCase(),
-                  //       style: const TextStyle(
-                  //         color: Colors.black,
-                  //         fontSize: 20,
-                  //         fontWeight: FontWeight.bold,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -113,7 +91,7 @@ class UserListCard extends StatelessWidget {
                   leading:
                       const Icon(Icons.music_note, color: Colors.tealAccent),
                   title: Text(
-                    'Roles: ${member['roles'].join(", ")}',
+                    'Roles: ${member['roles'] ?? [].join(", ")}',
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ),
