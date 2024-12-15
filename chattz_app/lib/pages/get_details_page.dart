@@ -22,13 +22,6 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   final _collegeNameController = TextEditingController();
   final _rollNumberController = TextEditingController();
   List<String> _selectedRoles = [];
-  List<String> imageUrls = [
-    "https://img.freepik.com/free-psd/3d-icon-social-media-app_23-2150049569.jpg?t=st=1734021272~exp=1734024872~hmac=e1631345b981bb44b56fa08ae2ed84a3c155df03ac3e688f117ddf8701e24976&w=826"
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQttE9sxpEu1EoZgU2lUF_HtygNLCaz2rZYHg&s",
-    "https://cdn-icons-png.flaticon.com/512/1053/1053244.png",
-    "https://cdn.vectorstock.com/i/1000v/92/16/default-profile-picture-avatar-user-icon-vector-46389216.jpg",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-wLGEqZy7Akjn0ZMf3qYTxNWZZMMimodTfA&s",
-  ];
 
   @override
   void initState() {
@@ -45,6 +38,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   }
 
   bool get isFormValid =>
+      _nameController.text.isNotEmpty &&
+      _emailController.text.isNotEmpty &&
       _collegeNameController.text.isNotEmpty &&
       _rollNumberController.text.isNotEmpty &&
       _selectedRoles.isNotEmpty;
@@ -166,39 +161,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                           },
                         ),
                         const SizedBox(height: 24),
-                        // _buildMultiSelectField(
-                        //   label: 'Courses',
-                        //   items: const [
-                        //     "Accordion",
-                        //     "Bagpipes",
-                        //     "Banjo",
-                        //     "Bass Guitar",
-                        //     "Cello",
-                        //     "Clarinet",
-                        //     "Double Bass",
-                        //     "Drums",
-                        //     "Fiddle",
-                        //     "Flute",
-                        //     "Guitar",
-                        //     "Keyboard",
-                        //     "Kora",
-                        //     "Piano",
-                        //     "Saxophone",
-                        //     "Sitar",
-                        //     "Steelpan",
-                        //     "Tabla",
-                        //     "Trombone",
-                        //     "Trumpet",
-                        //     "Violin"
-                        //   ],
-                        //   onConfirm: (values) {
-                        //     setState(() {
-                        //       _selectedRoles = values;
-                        //     });
-                        //   },
-                        // ),
                         _buildMultiSelectDropDownField(
-                          label: 'Courses',
+                          label: 'Select Your Interests',
                           items: roles,
                           onConfirm: (values) {
                             setState(() {
@@ -223,8 +187,6 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                         if (_formKey.currentState?.validate() ??
                                             false) {
                                           // Handle form submission logic
-                                          String randomImageUrl =
-                                              (imageUrls..shuffle()).first;
 
                                           // create a map of the user details
                                           Map<String, dynamic> userInfoMap = {
@@ -234,9 +196,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                                 _collegeNameController.text,
                                             "collegeId":
                                                 _rollNumberController.text,
-                                            "imageUrl": randomImageUrl,
                                             "gotDetails": true,
-                                            "groupId": "",
+                                            "groups": [],
                                           };
 
                                           // try adding the user to the database
@@ -321,72 +282,53 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      cursorColor: Colors.teal[800],
-      style: const TextStyle(color: Colors.white),
+      cursorColor: Colors.teal[300],
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 16, // Slightly larger font for readability
+        fontWeight: FontWeight.w500, // Semi-bold for better focus
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.teal[200]),
+        labelStyle: TextStyle(
+          color: Colors.teal[200],
+          fontSize: 14, // Consistent sizing for label text
+        ),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey[800]!),
+          borderSide: BorderSide(
+              color: Colors.grey[700]!), // Darker grey for enabled state
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.teal[200]!),
+          borderSide: BorderSide(
+            color: Colors.teal[300]!, // Slightly brighter teal for focus
+            width: 2, // Slightly thicker underline for focus
+          ),
         ),
         errorBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
+          borderSide: BorderSide(
+            color: Colors.red,
+            width: 2, // Consistent thickness for error state
+          ),
         ),
-        errorStyle: errorStyle,
+        errorStyle: errorStyle ??
+            const TextStyle(
+              color: Colors.redAccent, // Subtle error color
+              fontSize: 12, // Slightly smaller for less distraction
+              fontWeight: FontWeight.w400,
+            ),
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 12), // Adjust padding for better spacing
+        hintText: 'Enter $label', // Provide a helpful hint
+        hintStyle: TextStyle(
+          color: Colors.grey[600], // Subtle hint text
+          fontSize: 14,
+          fontWeight: FontWeight.w300,
+        ),
       ),
       validator: validator,
-    );
-  }
-
-  Widget _buildMultiSelectField({
-    required String label,
-    required List<String> items,
-    required void Function(List<String>) onConfirm,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(color: Colors.teal[200]),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          children: items.map((item) {
-            return FilterChip(
-              label: Text(item),
-              labelStyle: const TextStyle(color: Colors.white),
-              selected: _selectedRoles.contains(item),
-              selectedColor: Colors.teal[900],
-              onSelected: (isSelected) {
-                setState(() {
-                  if (isSelected) {
-                    _selectedRoles.add(item);
-                  } else {
-                    _selectedRoles.remove(item);
-                  }
-                  onConfirm(_selectedRoles);
-                });
-              },
-              backgroundColor: Colors.grey[900],
-              checkmarkColor: Colors.white,
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 8),
-        if (_selectedRoles.isEmpty)
-          Text(
-            'Please select at least one',
-            style: TextStyle(color: Colors.red[700], fontSize: 12),
-          ),
-      ],
     );
   }
 
@@ -395,43 +337,103 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
     required List<String> items,
     required void Function(List<String>) onConfirm,
   }) {
+    items = items.contains('None of them') ? items : ['None of them', ...items];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: Colors.teal[200]),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey[800]!),
+        // Constrained Dropdown width and height
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.55,
+          child: DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey[800]!),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.teal[200]!),
+              ),
             ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.teal[200]!),
+            isExpanded: true,
+            iconSize: 30, // Adjust icon size
+            items: items.map((String item) {
+              return DropdownMenuItem<String>(
+                value: item,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors
+                        .grey[850], // Subtle background for the entire tile
+                    borderRadius: BorderRadius.circular(
+                        8), // Rounded corners for the tile
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        item,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16, // Slightly larger font size
+                          fontWeight: FontWeight.w500, // Semi-bold for emphasis
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+            selectedItemBuilder: (BuildContext context) {
+              // Show "Select Interests" always as the selected item
+              return items.map((_) {
+                return Text(
+                  _selectedRoles.isNotEmpty
+                      ? _selectedRoles.join(', ')
+                      : 'Select Interests',
+                  // 'Select Interests',
+                  style: TextStyle(
+                    color: Colors.teal[200],
+                    fontWeight: FontWeight.w400,
+                  ),
+                );
+              }).toList();
+            },
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  // Only include 'None of them' if _selectedRoles is empty
+                  if (_selectedRoles.isEmpty) {
+                    if (!items.contains('None of them')) {
+                      items = ['None of them', ...items];
+                    }
+                  } else {
+                    items.remove('None of them');
+                  }
+
+                  if (value == 'None of them' && _selectedRoles.isEmpty) {
+                    _selectedRoles.add('None of them');
+                  } else if (value != 'None of them') {
+                    _selectedRoles.remove('None of them');
+                    if (!_selectedRoles.contains(value)) {
+                      _selectedRoles.add(value);
+                    }
+                  }
+
+                  // Call the onConfirm callback with the updated selected roles
+                  onConfirm(_selectedRoles);
+                });
+              }
+            },
+            hint: Text(
+              'Select Interests',
+              style: TextStyle(
+                color: Colors.teal[200],
+                fontWeight: FontWeight.w400,
+              ),
             ),
+            dropdownColor: Colors.grey[900], // Dropdown background color
+            itemHeight: 48, // Limit the height of each dropdown item
           ),
-          isExpanded: true,
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item, style: const TextStyle(color: Colors.white)),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null && !_selectedRoles.contains(value)) {
-              setState(() {
-                _selectedRoles.add(value);
-                onConfirm(_selectedRoles);
-              });
-            }
-          },
-          hint: Text(
-            'Select Courses',
-            style: TextStyle(color: Colors.grey[400]),
-          ),
-          dropdownColor: Colors.grey[900],
         ),
         const SizedBox(height: 8),
         Wrap(

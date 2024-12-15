@@ -1,5 +1,6 @@
-import 'package:chattz_app/pages/create_group_page.dart';
+import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
+import 'package:chattz_app/services/user_services.dart';
 import 'package:chattz_app/widgets/group_list_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isShownAsCard = true;
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   Map<String, Map<String, dynamic>> groups = {};
 
   @override
@@ -25,14 +27,97 @@ class _HomePageState extends State<HomePage> {
     Map<String, Map<String, dynamic>> newGroups =
         await FirestoreServices().getDetailsOfAllGroups();
     if (mounted) {
-      setState(() {
-        groups = newGroups;
-      });
+      setState(
+        () {
+          groups = newGroups;
+        },
+      );
     }
+  }
+
+  void createGroup() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+            child: CircularProgressIndicator(
+          color: Colors.teal[900],
+        ));
+      },
+    );
+
+    List<String> groupNames = [
+      'JamMasters',
+      'JamCrew',
+      'JamVibe',
+      'HarmonyHub',
+      'The Jamsters',
+      'RhythmNest',
+      'JamForge',
+      'JamTide',
+      'SyncJam',
+      'GrooveCircle',
+      'EchoJammers',
+      'JamPulse',
+      'ChordMates',
+      'VibeSync',
+      'JamFusion',
+    ];
+    groupNames.shuffle();
+
+    // Create a new group
+    Map<String, dynamic> newGroup = {
+      'name': groupNames.first,
+      'members': [currentUserId],
+      'admins': [currentUserId],
+    };
+
+    try {
+      Map<String, dynamic> user =
+          await UserService().getUserDetailsById(currentUserId);
+      if (user['groups'].length >= 3) {
+        throw 'You can only be a part of max 3 groups at a time';
+      }
+
+      newGroup = await FirestoreServices().createGroup(user, newGroup);
+
+      Navigator.pop(context);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatPage(
+              groupDetails: newGroup,
+            ),
+          ));
+    } catch (e) {
+      // show error message
+      showErrorMessage(e.toString());
+    }
+  }
+
+  void showErrorMessage(String errorMessage) {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.teal[900],
+          title: Center(
+            child: Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (groups.isEmpty) {
+      setGroups();
+    }
     return Scaffold(
       extendBodyBehindAppBar: true, // Allows content behind the AppBar
       appBar: AppBar(
@@ -141,8 +226,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Navigate to create a new Jam or group
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => CreateGroupPage()));
+          createGroup();
         },
         backgroundColor: Colors.teal.shade600,
         child: const Icon(

@@ -1,18 +1,29 @@
+import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/pages/chat_page.dart';
+import 'package:chattz_app/pages/group_details_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class GroupListCard extends StatelessWidget {
-  Map<String, dynamic> group;
-  GroupListCard({super.key, required this.group});
+  final Map<String, dynamic> group;
+  const GroupListCard({super.key, required this.group});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        bool isMember =
+            group['members'].contains(FirebaseAuth.instance.currentUser!.uid);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChatPage(),
+            builder: (context) => isMember
+                ? ChatPage(
+                    groupDetails: group,
+                  )
+                : GroupDetailsPage(
+                    groupDetails: group,
+                  ),
           ),
         );
       },
@@ -42,15 +53,21 @@ class GroupListCard extends StatelessWidget {
           child: ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            leading: CircleAvatar(
-              radius: 25,
-              backgroundColor: Colors.tealAccent.shade700,
-              child: Icon(
-                Icons.music_note,
-                size: 30,
-                color: Colors.grey.shade900,
-              ),
+            leading: ImageCircle(
+              letter: group['name'][0].toUpperCase(),
+              circleRadius: 25,
+              fontSize: 30,
+              colors: [Colors.teal.shade400, Colors.teal],
             ),
+            // CircleAvatar(
+            //   radius: 25,
+            //   backgroundColor: Colors.tealAccent.shade700,
+            //   child: Icon(
+            //     Icons.music_note,
+            //     size: 30,
+            //     color: Colors.grey.shade900,
+            //   ),
+            // ),
             title: Text(
               group['name'],
               style: const TextStyle(

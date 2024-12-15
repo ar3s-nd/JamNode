@@ -1,7 +1,4 @@
-import 'package:chattz_app/services/firestore_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class UserService {
   final CollectionReference userCollection =
@@ -24,49 +21,41 @@ class UserService {
       if (documentSnapshot.exists) {
         return documentSnapshot.data() as Map<String, dynamic>;
       } else {
-        debugPrint("came to default");
         return {
           'collegeId': 'collegeId',
           'collegeName': 'College Name',
           'email': 'Email',
           'name': 'name',
           'gotDetails': false,
-          'groupId': "",
-          'imageUrl': "",
+          'group': [],
           'roles': [],
         };
       }
-    } catch (e) {
-      debugPrint("Error in getUserDetailsById:$e");
-    }
+    } catch (e) {}
     return Future.value({
       'collegeId': 'College Id',
       'collegeName': 'College Name',
       'email': 'Email',
       'name': 'name',
       'gotDetails': false,
-      'groupId': "",
-      'imageUrl': "",
+      'groups': [],
       'roles': [],
     });
   }
 
   // get user info from firestore by groupId
-  Future<Map<String, Map<String, dynamic>>> getUserDetailsByGroupId() async {
+  Future<Map<String, Map<String, dynamic>>> getUserDetailsByGroupId(
+      String groupId) async {
     try {
-      String groupId = await FirestoreServices()
-          .getGroupId(FirebaseAuth.instance.currentUser!.uid);
       QuerySnapshot querySnapshot =
-          await userCollection.where('groupId', isEqualTo: groupId).get();
+          await userCollection.where('groups', arrayContains: groupId).get();
       Map<String, Map<String, dynamic>> userMap = {};
       for (var element in querySnapshot.docs) {
         userMap[element.id] =
             Map<String, dynamic>.from(element.data() as Map<String, dynamic>);
       }
       return userMap;
-    } catch (e) {
-      debugPrint("Error in getUserDetailsByGroupId:$e");
-    }
+    } catch (e) {}
     return {};
   }
 }

@@ -1,3 +1,4 @@
+import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/components/waveform_painter.dart';
 import 'package:chattz_app/models/message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,7 +8,7 @@ class MessageBubble extends StatelessWidget {
   final Message message;
   final Map<String, Map<String, dynamic>> userDetails;
 
-  MessageBubble({
+  const MessageBubble({
     super.key,
     required this.message,
     required this.userDetails,
@@ -17,6 +18,9 @@ class MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCurrentUser =
         message.senderUserId == FirebaseAuth.instance.currentUser!.uid;
+    if (userDetails[message.senderUserId] == null) {
+      debugPrint('User details not found for ${message.senderUserId}');
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -26,13 +30,30 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isCurrentUser) ...[
-            CircleAvatar(
-              backgroundImage: userDetails.containsKey(message.senderUserId)
-                  ? NetworkImage(userDetails[message.senderUserId]!["imageUrl"])
-                  : NetworkImage(
-                      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-wLGEqZy7Akjn0ZMf3qYTxNWZZMMimodTfA&s"),
-              radius: 16,
+            ImageCircle(
+              letter: userDetails[message.senderUserId] != null
+                  ? userDetails[message.senderUserId]!['name'][0].toUpperCase()
+                  : "P",
+              circleRadius: 20,
+              fontSize: 20,
+              colors: [
+                Colors.tealAccent.shade200,
+                Colors.teal,
+              ],
             ),
+            // CircleAvatar(
+            //   radius: 20,
+            //   backgroundColor: Colors.tealAccent.shade400,
+            //   child: Text(
+            //     userDetails[message.senderUserId]!['name'][0].toUpperCase() ??
+            //         "G",
+            //     style: const TextStyle(
+            //       color: Colors.black,
+            //       fontSize: 20,
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //   ),
+            // ),
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -96,7 +117,7 @@ class MessageBubble extends StatelessWidget {
                         ? Alignment.bottomRight
                         : Alignment.bottomLeft,
                     child: Text(
-                      '${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')} ${message.timestamp.hour >= 12 ? 'AM' : 'PM'}',
+                      '${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')} ${message.timestamp.hour <= 12 ? 'AM' : 'PM'}',
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 10,

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:chattz_app/models/message.dart';
 import 'package:chattz_app/services/firestore_services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AutoMessageService {
   String generateRandomString(int length) {
@@ -16,8 +17,8 @@ class AutoMessageService {
     }).join();
   }
 
-  void sendMessageToDataBasePeriodically(
-      {int time = 5, String userId = "otherUser"}) {
+  void sendMessageToDataBasePeriodically({int time = 5, String? userId}) {
+    userId ??= FirebaseAuth.instance.currentUser!.uid;
     Timer.periodic(Duration(seconds: time), (timer) async {
       try {
         Message message = Message(
@@ -26,7 +27,7 @@ class AutoMessageService {
             senderUserId: userId,
             timestamp: DateTime(2023));
         print("Sending message: ${message.text}");
-        await FirestoreServices().addMessage(userId, message);
+        await FirestoreServices().addMessage(userId!, message);
       } catch (e) {
         print("Error checking database: $e");
       }
