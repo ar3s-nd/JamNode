@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:chattz_app/models/message.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 class FirestoreServices {
@@ -61,12 +62,24 @@ class FirestoreServices {
       groupData['groupId'] = groupDocRef.id;
       groupData['createdOn'] =
           DateFormat('MMMM d, yyyy').format(DateTime.now());
+      groupData['isActive'] = true;
+      groupData['allMembers'] = groupData['members'];
       // update the group data after modification
       await groupDocRef.set(groupData);
 
       // add the group id to the user's data
       user['groups'].add(groupDocRef.id);
       UserService().updateProfile(groupData['members'][0], user);
+      await addMessage(
+        groupDocRef.id,
+        Message(
+          id: DateTime.now().toString(),
+          text: '${user['name']} joined',
+          senderUserId: FirebaseAuth.instance.currentUser!.uid,
+          timestamp: DateTime.now(),
+          isLog: true,
+        ),
+      );
 
       return groupData;
     } catch (e) {
@@ -76,28 +89,29 @@ class FirestoreServices {
     return {};
   }
 
-  Future<List<String>> getRoles() async {
+  Future<List<String>> getSkills() async {
     try {
-      QuerySnapshot snapshot = await _firestore.collection('Roles').get();
-      List<String> roles = snapshot.docs
-          .map((doc) => (doc.data() as Map<String, dynamic>)['role'] as String)
+      QuerySnapshot snapshot = await _firestore.collection('Sports').get();
+      List<String> skills = snapshot.docs
+          .map((doc) => (doc.data() as Map<String, dynamic>)['sport'] as String)
           .toList();
-      return roles;
+      return skills;
     } catch (e) {
       return [];
     }
   }
 
-// Future<void> addRoles(List<String> roles) async {
-  Future<void> addRoles(
-      List<String> roles, String collectionId, String fieldId) async {
+// Future<void> addSkills(List<String> skills) async {
+  Future<void> addSkills(
+      List<String> skills, String collectionId, String fieldId) async {
     try {
       WriteBatch batch = _firestore.batch();
-      CollectionReference rolesCollection = _firestore.collection(collectionId);
+      CollectionReference skillsCollection =
+          _firestore.collection(collectionId);
 
-      for (String role in roles) {
-        DocumentReference docRef = rolesCollection.doc();
-        batch.set(docRef, {fieldId: role});
+      for (String skill in skills) {
+        DocumentReference docRef = skillsCollection.doc();
+        batch.set(docRef, {fieldId: skill});
       }
 
       await batch.commit();
@@ -128,8 +142,6 @@ class FirestoreServices {
               id: messageData['id'] as String,
               text: messageData['text'] as String,
               isLog: messageData['isLog'] as bool,
-              audioUrl: messageData['audioUrl'] as String?,
-              audioDuration: messageData['audioDuration'] as String?,
               senderUserId: messageData['senderUserId'] as String?,
               timestamp: DateTime.parse(messageData['timestamp'] as String),
             );
@@ -157,8 +169,6 @@ class FirestoreServices {
         Map<String, dynamic> messageData = {
           'id': message.id,
           'text': message.text,
-          'audioUrl': message.audioUrl,
-          'audioDuration': message.audioDuration,
           'senderUserId': message.senderUserId,
           'timestamp': message.timestamp.toIso8601String(),
           'isLog': message.isLog,
@@ -191,7 +201,12 @@ class FirestoreServices {
         if (groupSnapshot.exists && groupSnapshot.data() != null) {
           Map<String, dynamic> groupDetails =
               groupSnapshot.data() as Map<String, dynamic>;
+          if (!groupDetails['isActive']) {
+            return {};
+          }
+          groupDetails.remove('isActive');
           groupDetails['admins'] = List<String>.from(groupDetails['admins']);
+          groupDetails['members'] = List<String>.from(groupDetails['members']);
           groupDetails['members'] = List<String>.from(groupDetails['members']);
           return groupSnapshot.data() as Map<String, dynamic>;
         }
@@ -218,6 +233,12 @@ class FirestoreServices {
       QuerySnapshot groupsSnapshot = await groupsCollection.get();
       for (QueryDocumentSnapshot groupDoc in groupsSnapshot.docs) {
         groupDetails[groupDoc.id] = groupDoc.data() as Map<String, dynamic>;
+        if (!groupDetails[groupDoc.id]!['isActive']) {
+          groupDetails.remove(groupDoc.id);
+          continue;
+        }
+
+        groupDetails[groupDoc.id]!.remove('isActive');
         groupDetails[groupDoc.id]!['admins'] =
             List<String>.from(groupDetails[groupDoc.id]!['admins']);
         groupDetails[groupDoc.id]!['members'] =
@@ -245,11 +266,31 @@ class FirestoreServices {
   Future<void> deleteGroup(String groupId) async {
     try {
       if (groupId.isNotEmpty) {
-        await _firestore.collection('Groups').doc(groupId).delete();
+        Map<String, dynamic> newDetails = {
+          'isActive': false,
+        };
+        await updateGroupDetails(groupId, newDetails);
       }
     } catch (e) {
       // Use a logging framework instead of print
       // Example: Logger().e(e);
     }
+  }
+
+  Future<Map<String, dynamic>> getAppDataAndSettings() async {
+    Map<String, dynamic> basicData = {};
+    try {
+      DocumentSnapshot snapshot = await _firestore
+          .collection('Basic Data and Settings')
+          .doc('basic_data_and_settings_1')
+          .get();
+      if (snapshot.exists && snapshot.data() != null) {
+        basicData = snapshot.data() as Map<String, dynamic>;
+      }
+    } catch (e) {
+      // Use a logging framework instead of print
+      // Example: Logger().e(e);
+    }
+    return basicData;
   }
 }

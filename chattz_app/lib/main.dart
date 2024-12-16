@@ -4,14 +4,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 
-List<String> roles = [];
-
+List<String> skills = [];
+int numberOfGroupsPerPerson = 5;
+int timeOutForGroups = 5;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  roles = await FirestoreServices().getRoles();
+  skills = await FirestoreServices().getSkills();
+  Map<String, dynamic> basic =
+      await FirestoreServices().getAppDataAndSettings();
+
+  skills = List<String>.from(basic['skills']);
+  numberOfGroupsPerPerson = basic['numberOfGroupsPerPerson'] as int;
+  timeOutForGroups = basic['timeoutForGroups'] as int;
   runApp(const MyApp());
 }
 

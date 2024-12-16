@@ -21,7 +21,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   final _emailController = TextEditingController();
   final _collegeNameController = TextEditingController();
   final _rollNumberController = TextEditingController();
-  List<String> _selectedRoles = [];
+  List<String> _selectedSkills = [];
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
       _emailController.text.isNotEmpty &&
       _collegeNameController.text.isNotEmpty &&
       _rollNumberController.text.isNotEmpty &&
-      _selectedRoles.isNotEmpty;
+      _selectedSkills.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -172,10 +172,10 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         const SizedBox(height: 24),
                         _buildMultiSelectDropDownField(
                           label: 'Select Your Interests',
-                          items: roles,
+                          items: skills,
                           onConfirm: (values) {
                             setState(() {
-                              _selectedRoles = values;
+                              _selectedSkills = values;
                             });
                           },
                         ),
@@ -206,7 +206,9 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                             "collegeId":
                                                 _rollNumberController.text,
                                             "gotDetails": true,
+                                            'gotSkillDetails': false,
                                             "groups": [],
+                                            'skills': _selectedSkills,
                                           };
 
                                           // try adding the user to the database
@@ -228,7 +230,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Finish',
+                                  'Next',
                                   style: TextStyle(
                                     color: isFormValid
                                         ? Colors.white
@@ -265,14 +267,6 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
         ),
       ),
     );
-  }
-
-  List<String> getRoles() {
-    List<String> roles = [];
-    FirestoreServices().getRoles().then((value) {
-      roles = value;
-    });
-    return roles;
   }
 
   Widget _buildTextField({
@@ -390,8 +384,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
               // Show "Select Interests" always as the selected item
               return items.map((_) {
                 return Text(
-                  _selectedRoles.isNotEmpty
-                      ? _selectedRoles.join(', ')
+                  _selectedSkills.isNotEmpty
+                      ? _selectedSkills.join(', ')
                       : 'Select Interests',
                   // 'Select Interests',
                   style: TextStyle(
@@ -404,8 +398,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
             onChanged: (value) {
               if (value != null) {
                 setState(() {
-                  // Only include 'None of them' if _selectedRoles is empty
-                  if (_selectedRoles.isEmpty) {
+                  // Only include 'None of them' if _selectedSkills is empty
+                  if (_selectedSkills.isEmpty) {
                     if (!items.contains('None of them')) {
                       items = ['None of them', ...items];
                     }
@@ -413,22 +407,22 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                     items.remove('None of them');
                   }
 
-                  if (value == 'None of them' && _selectedRoles.isEmpty) {
-                    _selectedRoles.add('None of them');
+                  if (value == 'None of them' && _selectedSkills.isEmpty) {
+                    _selectedSkills.add('None of them');
                   } else if (value != 'None of them') {
-                    _selectedRoles.remove('None of them');
-                    if (!_selectedRoles.contains(value)) {
-                      _selectedRoles.add(value);
+                    _selectedSkills.remove('None of them');
+                    if (!_selectedSkills.contains(value)) {
+                      _selectedSkills.add(value);
                     }
                   }
 
-                  // Call the onConfirm callback with the updated selected roles
-                  onConfirm(_selectedRoles);
+                  // Call the onConfirm callback with the updated selected skills
+                  onConfirm(_selectedSkills);
                 });
               }
             },
             hint: Text(
-              'Select Interests',
+              'Select Skills',
               style: TextStyle(
                 color: Colors.teal[200],
                 fontWeight: FontWeight.w400,
@@ -441,21 +435,21 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
         const SizedBox(height: 8),
         Wrap(
           spacing: 10,
-          children: _selectedRoles.map((course) {
+          children: _selectedSkills.map((course) {
             return Chip(
               label: Text(course, style: const TextStyle(color: Colors.white)),
               backgroundColor: Colors.teal[900],
               deleteIcon: const Icon(Icons.close, color: Colors.white),
               onDeleted: () {
                 setState(() {
-                  _selectedRoles.remove(course);
-                  onConfirm(_selectedRoles);
+                  _selectedSkills.remove(course);
+                  onConfirm(_selectedSkills);
                 });
               },
             );
           }).toList(),
         ),
-        if (_selectedRoles.isEmpty)
+        if (_selectedSkills.isEmpty)
           Text(
             'Please select at least one',
             style: TextStyle(color: Colors.red[700], fontSize: 12),

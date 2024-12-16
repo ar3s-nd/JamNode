@@ -58,8 +58,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void listenToChatChanges() {
-    FirestoreServices()
-        .listenToChatChanges([setMessages], groupDetails['groupId']);
+    FirestoreServices().listenToChatChanges(
+        [setMessages, setGroupDetails, setUserDetails],
+        groupDetails['groupId']);
   }
 
   void setMessages() async {
@@ -75,15 +76,12 @@ class _ChatPageState extends State<ChatPage> {
         groupDetails = widget.groupDetails;
       });
     }
+
     groupDetails = await FirestoreServices()
         .getGroupDetailsByGroupId(groupDetails['groupId']);
     if (mounted) {
       setState(() {});
     }
-    // debugPrint("Group Details: ${groupDetails.toString()}");
-    // debugPrint("Widget Group Details: ${widget.groupDetails.toString()}");
-    debugPrint("${groupDetails['chats'] == widget.groupDetails['chats']}");
-    debugPrint(_messages.toString());
   }
 
   void setUserDetails() async {
@@ -135,7 +133,6 @@ class _ChatPageState extends State<ChatPage> {
     }
     if (_messages.isEmpty) {
       setMessages();
-      debugPrint("Messages: $_messages");
     }
     return Scaffold(
       backgroundColor: Colors.black,
@@ -148,27 +145,27 @@ class _ChatPageState extends State<ChatPage> {
             if (Navigator.canPop(context)) {Navigator.pop(context)}
           },
         ),
-        title: Row(
-          children: [
-            ImageCircle(
-              letter: groupDetails['name'][0].toUpperCase(),
-              circleRadius: 20,
-              fontSize: 20,
-              colors: [Colors.teal.shade400, Colors.teal],
-            ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => GroupDetailsPage(
-                      groupDetails: groupDetails,
-                    ),
-                  ),
-                );
-              },
-              child: Column(
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => GroupDetailsPage(
+                  groupDetails: groupDetails,
+                ),
+              ),
+            );
+          },
+          child: Row(
+            children: [
+              ImageCircle(
+                letter: groupDetails['name'][0].toUpperCase(),
+                circleRadius: 20,
+                fontSize: 20,
+                colors: [Colors.tealAccent.shade200, Colors.teal],
+              ),
+              const SizedBox(width: 12),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -188,8 +185,8 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -238,8 +235,8 @@ class _ChatPageState extends State<ChatPage> {
                                 ),
                                 child: Text(
                                   groupDetails.containsKey('createdOn')
-                                      ? 'Created on ${groupDetails['createdOn']}'
-                                      : 'Created on 2024-12-25',
+                                      ? 'Started on ${groupDetails['createdOn']}'
+                                      : 'Started on 2024-12-25',
                                   style: TextStyle(
                                     color: Colors.grey[400],
                                     fontSize: 12,
@@ -263,10 +260,6 @@ class _ChatPageState extends State<ChatPage> {
                           itemCount: _messages.keys.length,
                           itemBuilder: (context, index) {
                             final date = _messages.keys.elementAt(index);
-                            debugPrint("Date: $date");
-                            debugPrint(
-                                "messages: ${_messages.keys.elementAt(index)}");
-                            debugPrint("Date: ${DateTime.now()}");
 
                             final messages = _messages[date]!;
                             // Sort the messages by timestamp
@@ -290,8 +283,8 @@ class _ChatPageState extends State<ChatPage> {
                                       ),
                                       child: Text(
                                         groupDetails.containsKey('createdOn')
-                                            ? 'Created on ${groupDetails['createdOn']}'
-                                            : 'Created on 2024-12-25',
+                                            ? 'Started on ${groupDetails['createdOn']}'
+                                            : 'Started on 2024-12-25',
                                         style: TextStyle(
                                           color: Colors.grey[400],
                                           fontSize: 12,
@@ -423,25 +416,6 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
-
-  // void _scrollToBottom() {
-  //   // Get the height of the screen and the height of the keyboard
-  //   double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-
-  //   // Scroll to the bottom of the chat, but account for the keyboard height
-  //   double targetPosition = _scrollController.position.maxScrollExtent;
-  //   if (keyboardHeight > 0) {
-  //     targetPosition -=
-  //         keyboardHeight; // Adjust scroll position if the keyboard is visible
-  //   }
-
-  //   // Animate scroll to the target position
-  //   _scrollController.animateTo(
-  //     targetPosition,
-  //     duration: const Duration(milliseconds: 600),
-  //     curve: Curves.easeOut,
-  //   );
-  // }
 
   void _scrollToBottom() {
     if (!_scrollController.hasClients) return;

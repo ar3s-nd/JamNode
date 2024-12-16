@@ -1,14 +1,26 @@
 import 'package:chattz_app/components/image_circle.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class UserListCard extends StatelessWidget {
   final Map<String, dynamic> member;
   final bool isAdmin;
+  final String userId;
+  final Function remove;
+  final bool showRemove;
 
-  const UserListCard({super.key, required this.member, required this.isAdmin});
+  const UserListCard({
+    super.key,
+    required this.member,
+    required this.isAdmin,
+    required this.userId,
+    required this.remove,
+    required this.showRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
+    bool isMe = FirebaseAuth.instance.currentUser!.uid == userId;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
       child: Card(
@@ -20,19 +32,26 @@ class UserListCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.grey.shade900, Colors.black],
+              colors: [
+                Colors.grey.shade900,
+                Colors.black,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+              splashColor: Colors.transparent, // Removes splash
+              highlightColor: Colors.transparent,
+            ),
             child: ExpansionTile(
               iconColor: Colors.tealAccent.shade400,
               collapsedIconColor: Colors.tealAccent.shade400,
               tilePadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
               childrenPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               title: Row(
@@ -44,10 +63,10 @@ class UserListCard extends StatelessWidget {
                     fontSize: 20,
                     colors: [Colors.tealAccent.shade200, Colors.teal],
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.031),
                   Expanded(
                     child: Text(
-                      member['name'],
+                      '${member['name']}${isMe ? ' (You)' : ''}',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.75),
                         fontSize: 18,
@@ -91,10 +110,39 @@ class UserListCard extends StatelessWidget {
                   leading:
                       const Icon(Icons.music_note, color: Colors.tealAccent),
                   title: Text(
-                    'Roles: ${member['roles'] ?? [].join(", ")}',
+                    member['skills'].contains("None of them")
+                        ? 'Just here for fun'
+                        : 'Skills: ${member['skills'].join(', ')}',
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (!isAdmin && !isMe && showRemove)
+                      ElevatedButton(
+                        onPressed: () {
+                          remove(userId, false);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade900,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: 10,
+                          shadowColor: Colors.redAccent.shade700,
+                        ),
+                        child: const Text(
+                          'Remove',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                )
               ],
             ),
           ),

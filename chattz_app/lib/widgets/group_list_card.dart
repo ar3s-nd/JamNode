@@ -68,7 +68,7 @@ class GroupListCard extends StatelessWidget {
                   letter: group['name'][0].toUpperCase(),
                   circleRadius: 24,
                   fontSize: 24,
-                  colors: [Colors.teal.shade800, Colors.teal.shade600],
+                  colors: [Colors.tealAccent.shade200, Colors.teal],
                 ),
               ],
             ),
@@ -94,7 +94,7 @@ class GroupListCard extends StatelessWidget {
               ],
             ),
             trailing: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
@@ -107,7 +107,7 @@ class GroupListCard extends StatelessWidget {
                 ),
               ),
               child: const Icon(
-                Icons.chevron_right,
+                Icons.chevron_right_rounded,
                 size: 26,
                 color: Colors.white,
               ),

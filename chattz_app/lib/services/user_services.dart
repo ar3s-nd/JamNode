@@ -28,7 +28,7 @@ class UserService {
           'name': 'name',
           'gotDetails': false,
           'group': [],
-          'roles': [],
+          'skills': [],
         };
       }
     } catch (e) {
@@ -41,7 +41,7 @@ class UserService {
       'name': 'name',
       'gotDetails': false,
       'groups': [],
-      'roles': [],
+      'skills': [],
     });
   }
 
