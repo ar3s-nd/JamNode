@@ -116,7 +116,7 @@ class UserListCard extends StatelessWidget {
                   leading:
                       const Icon(Icons.music_note, color: Colors.tealAccent),
                   title: Text(
-                    member['skills'].containsKey("None of them")
+                    member['skills'].isEmpty
                         ? 'Just here for fun'
                         : 'Skills: ${member['skills'].keys.join(', ')}',
                     overflow: TextOverflow.ellipsis,

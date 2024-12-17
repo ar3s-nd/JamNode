@@ -75,7 +75,7 @@ class SkillSlider extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            if (showSlider) const SizedBox(height: 12),
             if (showSlider)
               // Slider
               SliderTheme(

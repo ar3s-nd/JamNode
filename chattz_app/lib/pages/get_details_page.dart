@@ -207,7 +207,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                     ),
                     const SizedBox(height: 24),
                     _buildMultiSelectDropDownField(
-                      label: 'Select Your Interests',
+                      label: 'Select Your Skills',
                       items: skillsGlobal,
                       onConfirm: (values) {
                         setState(() {
@@ -234,7 +234,9 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                                       // create a map of the user details
                                       Map<String, dynamic> skills = {};
                                       for (var skill in _selectedSkills) {
-                                        skills[skill] = 0;
+                                        if (skill != 'None of them') {
+                                          skills[skill] = 1;
+                                        }
                                       }
                                       Map<String, dynamic> userInfoMap = {
                                         'name': _nameController.text,
