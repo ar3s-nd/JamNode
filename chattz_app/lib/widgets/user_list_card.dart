@@ -67,6 +67,8 @@ class UserListCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '${member['name']}${isMe ? ' (You)' : ''}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.75),
                         fontSize: 18,
@@ -88,6 +90,8 @@ class UserListCard extends StatelessWidget {
                       ),
                       child: Text(
                         'Admin',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                         style: TextStyle(
                           color: Colors.tealAccent.shade700,
                           fontSize: 14,
@@ -103,6 +107,8 @@ class UserListCard extends StatelessWidget {
                       color: Colors.tealAccent),
                   title: Text(
                     'Email: ${member['email']}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ),
@@ -110,9 +116,11 @@ class UserListCard extends StatelessWidget {
                   leading:
                       const Icon(Icons.music_note, color: Colors.tealAccent),
                   title: Text(
-                    member['skills'].contains("None of them")
+                    member['skills'].containsKey("None of them")
                         ? 'Just here for fun'
-                        : 'Skills: ${member['skills'].join(', ')}',
+                        : 'Skills: ${member['skills'].keys.join(', ')}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ),

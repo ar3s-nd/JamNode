@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:chattz_app/components/image_circle.dart';
+import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/pages/profile_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
@@ -18,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   bool isShownAsCard = true;
   String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   Map<String, Map<String, dynamic>> groups = {};
+  Map<String, dynamic> userDetails = {};
   String user = 'J';
 
   @override
@@ -46,6 +50,7 @@ class _HomePageState extends State<HomePage> {
     if (mounted) {
       setState(
         () {
+          userDetails = newUser;
           user = newUser['name'];
         },
       );
@@ -63,28 +68,13 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    List<String> groupNames = [
-      'JamMasters',
-      'JamCrew',
-      'JamVibe',
-      'HarmonyHub',
-      'The Jamsters',
-      'RhythmNest',
-      'JamForge',
-      'JamTide',
-      'SyncJam',
-      'GrooveCircle',
-      'EchoJammers',
-      'JamPulse',
-      'ChordMates',
-      'VibeSync',
-      'JamFusion',
-    ];
-    groupNames.shuffle();
+    Random random = Random();
+    String groupName =
+        groupNamesGlobal[random.nextInt(groupNamesGlobal.length)];
 
     // Create a new group
     Map<String, dynamic> newGroup = {
-      'name': groupNames.first,
+      'name': groupName,
       'members': [currentUserId],
       'admins': [currentUserId],
     };
@@ -175,7 +165,9 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ProfilePage(),
+                  builder: (context) => ProfilePage(
+                    userData: userDetails,
+                  ),
                 ),
               );
             },
@@ -309,7 +301,7 @@ class _HomePageState extends State<HomePage> {
                                 Icons.groups_2_rounded,
                                 size: MediaQuery.of(context).size.width *
                                     0.3, // Dynamic icon size
-                                color: Colors.tealAccent.shade400,
+                                color: Colors.tealAccent.shade700,
                               ),
                             ),
                           ),
@@ -420,7 +412,7 @@ class _HomePageState extends State<HomePage> {
                                 createGroup();
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.tealAccent.shade400,
+                                backgroundColor: Colors.tealAccent.shade700,
                                 foregroundColor: Colors.black,
                                 side: BorderSide(
                                     color: Colors.tealAccent.shade100,

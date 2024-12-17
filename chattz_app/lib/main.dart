@@ -4,21 +4,26 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 
-List<String> skills = [];
-int numberOfGroupsPerPerson = 5;
-int timeOutForGroups = 5;
+List<String> skillsGlobal = [];
+int numberOfGroupsPerPersonGlobal = 5;
+int timeOutForGroupsGlobal = 5;
+List<String> groupNamesGlobal = [];
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  skills = await FirestoreServices().getSkills();
+
   Map<String, dynamic> basic =
       await FirestoreServices().getAppDataAndSettings();
 
-  skills = List<String>.from(basic['skills']);
-  numberOfGroupsPerPerson = basic['numberOfGroupsPerPerson'] as int;
-  timeOutForGroups = basic['timeoutForGroups'] as int;
+  groupNamesGlobal = List<String>.from(basic['groupNames'] ?? []);
+  skillsGlobal = List<String>.from(basic['skills'] ?? []);
+  skillsGlobal.sort();
+  numberOfGroupsPerPersonGlobal = basic['numberOfGroupsPerPerson'] as int;
+  timeOutForGroupsGlobal = basic['timeoutForGroups'] as int;
+
   runApp(const MyApp());
 }
 
@@ -30,6 +35,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
         title: "Chattz",
         home: AuthPage(),
+        // home: /
         debugShowCheckedModeBanner: false,
         color: Colors.grey);
   }

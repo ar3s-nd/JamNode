@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:chattz_app/models/message.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -54,7 +55,20 @@ class FirestoreServices {
       Map<String, dynamic> user, Map<String, dynamic> groupData) async {
     try {
       // create group document
-      DocumentReference groupDocRef = _firestore.collection('Groups').doc();
+      String generateRandomString(int length) {
+        const characters =
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        Random random = Random();
+
+        return List.generate(length, (index) {
+          int randomIndex = random.nextInt(characters.length);
+          return characters[randomIndex];
+        }).join();
+      }
+
+      String id = generateRandomString(20);
+      DocumentReference groupDocRef =
+          _firestore.collection('Groups').doc('${id}_${groupData['name']}');
       // set the group Data
       await groupDocRef.set(groupData);
 
@@ -292,5 +306,17 @@ class FirestoreServices {
       // Example: Logger().e(e);
     }
     return basicData;
+  }
+
+  Future<void> updateAppDataAndSettings(Map<String, dynamic> data) async {
+    try {
+      await _firestore
+          .collection('Basic Data and Settings')
+          .doc('basic_data_and_settings_1')
+          .update(data);
+    } catch (e) {
+      // Use a logging framework instead of print
+      // Example: Logger().e(e);
+    }
   }
 }

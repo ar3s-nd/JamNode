@@ -139,10 +139,12 @@ class _ChatPageState extends State<ChatPage> {
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
         elevation: 1,
-        leading: BackButton(
-          color: Colors.white,
-          onPressed: () => {
-            if (Navigator.canPop(context)) {Navigator.pop(context)}
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
           },
         ),
         title: GestureDetector(
@@ -160,44 +162,50 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               ImageCircle(
                 letter: groupDetails['name'][0].toUpperCase(),
-                circleRadius: 20,
-                fontSize: 20,
+                circleRadius: MediaQuery.of(context).size.width *
+                    0.045, // Dynamic circle size
+                fontSize: MediaQuery.of(context).size.width *
+                    0.05, // Dynamic font size
                 colors: [Colors.tealAccent.shade200, Colors.teal],
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    groupDetails["name"],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+              SizedBox(
+                  width: MediaQuery.of(context).size.width *
+                      0.02), // Dynamic spacing
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      groupDetails["name"],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width *
+                            0.04, // Dynamic font size
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  Text(
-                    "${groupDetails['members'].length} members",
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 12,
+                    Text(
+                      groupDetails['members'].length == 1
+                          ? "1 member"
+                          : groupDetails['members'].length > 999
+                              ? '999+ members'
+                              : "${groupDetails['members'].length} members",
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: MediaQuery.of(context).size.width *
+                            0.03, // Dynamic font size
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.phone_outlined, color: Colors.white),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.videocam_outlined, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Container(
         height: MediaQuery.of(context).size.height,
@@ -338,12 +346,8 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   child: Row(
                     children: [
-                      // Mic Button
-                      IconButton(
-                        icon:
-                            const Icon(Icons.mic_outlined, color: Colors.white),
-                        onPressed: () {},
-                      ),
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.045),
                       // TextField for input
                       Expanded(
                         child: TextField(

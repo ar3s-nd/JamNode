@@ -1,15 +1,22 @@
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/auth_page.dart';
-import 'package:chattz_app/pages/onboarding.dart';
-import 'package:chattz_app/services/firestore_services.dart';
+import 'package:chattz_app/pages/get_skill_level_page.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class GetDetailsPage extends StatefulWidget {
-  final String name, email;
+  final String name, email, collegeName, rollNumber;
+  final List<String> skills;
 
-  const GetDetailsPage(this.name, this.email, {super.key});
+  const GetDetailsPage({
+    super.key,
+    required this.name,
+    required this.email,
+    required this.collegeName,
+    required this.rollNumber,
+    required this.skills,
+  });
 
   @override
   State<GetDetailsPage> createState() => _GetDetailsPageState();
@@ -28,6 +35,9 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
     super.initState();
     _nameController.text = widget.name;
     _emailController.text = widget.email;
+    _collegeNameController.text = widget.collegeName;
+    _rollNumberController.text = widget.rollNumber;
+    _selectedSkills = widget.skills;
   }
 
   @override
@@ -37,7 +47,16 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
     super.dispose();
   }
 
-  void pushReplacement() {
+  void push() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GetSkillLevelPage(skills: _selectedSkills),
+      ),
+    );
+  }
+
+  void pusReplacementAuthPage() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -57,212 +76,224 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.cyan.shade900,
-              Colors.teal.shade900,
-              Colors.black,
-            ],
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Colors.white),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              pusReplacementAuthPage();
+            },
           ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 60.0),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: RichText(
-                            text: TextSpan(
-                              text: 'Enter your ',
-                              style: const TextStyle(
-                                color: Colors.white,
+        ],
+      ),
+      body: RefreshIndicator.adaptive(
+        color: Colors.tealAccent,
+        backgroundColor: Colors.black,
+        onRefresh: () {
+          setState(() {});
+          return Future<void>.value();
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF2D1F3D),
+                Colors.teal.shade900,
+                Colors.black,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Enter your ',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'Details',
+                              style: TextStyle(
+                                color: Colors.teal[200],
                                 fontSize: 24,
                                 fontWeight: FontWeight.w600,
                               ),
-                              children: [
-                                TextSpan(
-                                  text: 'Details',
-                                  style: TextStyle(
-                                    color: Colors.teal[200],
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
                             ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Center(
-                          child: Text(
-                            'Please provide your details to continue.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 48),
-                        _buildTextField(
-                          controller: _nameController,
-                          label: 'Name',
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Name is required';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        _buildTextField(
-                          controller: _emailController,
-                          label: 'Your email',
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Email is required';
-                            }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                .hasMatch(value!)) {
-                              return 'Invalid email address';
-                            }
-                            return null;
-                          },
-                          errorStyle: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _buildTextField(
-                          controller: _collegeNameController,
-                          label: 'College Name',
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'College name is required';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        _buildTextField(
-                          controller: _rollNumberController,
-                          label: 'Roll Number',
-                          validator: (value) {
-                            if (value?.isEmpty ?? true) {
-                              return 'Roll number is required';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        _buildMultiSelectDropDownField(
-                          label: 'Select Your Interests',
-                          items: skills,
-                          onConfirm: (values) {
-                            setState(() {
-                              _selectedSkills = values;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 48),
-                        SizedBox(
-                          width: double.infinity,
-                          child: AnimatedBuilder(
-                            animation: Listenable.merge([
-                              _nameController,
-                              _emailController,
-                              _collegeNameController,
-                              _rollNumberController,
-                            ]),
-                            builder: (context, _) {
-                              return ElevatedButton(
-                                onPressed: isFormValid
-                                    ? () async {
-                                        if (_formKey.currentState?.validate() ??
-                                            false) {
-                                          // Handle form submission logic
-
-                                          // create a map of the user details
-                                          Map<String, dynamic> userInfoMap = {
-                                            'name': _nameController.text,
-                                            'email': _emailController.text,
-                                            "collegeName":
-                                                _collegeNameController.text,
-                                            "collegeId":
-                                                _rollNumberController.text,
-                                            "gotDetails": true,
-                                            'gotSkillDetails': false,
-                                            "groups": [],
-                                            'skills': _selectedSkills,
-                                          };
-
-                                          // try adding the user to the database
-                                          await UserService().addUserDetails(
-                                              userInfoMap,
-                                              FirebaseAuth
-                                                  .instance.currentUser!.uid);
-                                        }
-                                      }
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isFormValid
-                                      ? Colors.teal[900]
-                                      : Colors.grey[800],
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Next',
-                                  style: TextStyle(
-                                    color: isFormValid
-                                        ? Colors.white
-                                        : Colors.grey[500],
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        'Please provide your details to continue.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    _buildTextField(
+                      controller: _nameController,
+                      label: 'Name',
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Name is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTextField(
+                      controller: _emailController,
+                      label: 'Your email',
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Email is required';
+                        }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value!)) {
+                          return 'Invalid email address';
+                        }
+                        return null;
+                      },
+                      errorStyle: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTextField(
+                      controller: _collegeNameController,
+                      label: 'College Name',
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'College name is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTextField(
+                      controller: _rollNumberController,
+                      label: 'Roll Number',
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'Roll number is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _buildMultiSelectDropDownField(
+                      label: 'Select Your Interests',
+                      items: skillsGlobal,
+                      onConfirm: (values) {
+                        setState(() {
+                          _selectedSkills = values;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 48),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _nameController,
+                          _emailController,
+                          _collegeNameController,
+                          _rollNumberController,
+                        ]),
+                        builder: (context, _) {
+                          return ElevatedButton(
+                            onPressed: isFormValid
+                                ? () async {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      // create a map of the user details
+                                      Map<String, dynamic> skills = {};
+                                      for (var skill in _selectedSkills) {
+                                        skills[skill] = 0;
+                                      }
+                                      Map<String, dynamic> userInfoMap = {
+                                        'name': _nameController.text,
+                                        'email': _emailController.text,
+                                        "collegeName":
+                                            _collegeNameController.text,
+                                        "collegeId": _rollNumberController.text,
+                                        "gotDetails": false,
+                                        "groups": [],
+                                        'skills': skills,
+                                      };
+
+                                      if (_selectedSkills
+                                          .contains('None of them')) {
+                                        userInfoMap['gotDetails'] = true;
+                                      }
+
+                                      // try adding the user to the database
+                                      await UserService().updateProfile(
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        userInfoMap,
+                                      );
+                                      if (userInfoMap['gotDetails']) {
+                                        pusReplacementAuthPage();
+                                      } else {
+                                        push();
+                                      }
+                                    }
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isFormValid
+                                  ? const Color.fromARGB(255, 20, 117, 101)
+                                  : Colors.grey[800],
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              _selectedSkills.contains('None of them')
+                                  ? 'Finish'
+                                  : 'Next',
+                              style: TextStyle(
+                                color: isFormValid
+                                    ? Colors.white
+                                    : Colors.grey[500],
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Positioned(
-                top: 16,
-                right: 8,
-                child: IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                  onPressed: () async {
-                    FirebaseAuth.instance.signOut();
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const OnboardingPage()));
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

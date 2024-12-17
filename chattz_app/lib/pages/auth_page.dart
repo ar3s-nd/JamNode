@@ -42,8 +42,14 @@ class AuthPageState extends State<AuthPage> {
                   } else {
                     // If user details are not found, go to get details page
                     return GetDetailsPage(
-                      userDetailsSnapshot.data?['name'] ?? '',
-                      userDetailsSnapshot.data?['email'] ?? '',
+                      name: userDetailsSnapshot.data?['name'] ?? '',
+                      email: userDetailsSnapshot.data?['email'] ?? '',
+                      collegeName:
+                          userDetailsSnapshot.data?['collegeName'] ?? '',
+                      rollNumber: userDetailsSnapshot.data?['collegeId'] ?? '',
+                      skills: List<String>.from(
+                          userDetailsSnapshot.data?['skills'].keys),
+                      //TODO check if this works
                     );
                   }
                 },

@@ -73,6 +73,7 @@ class GroupListCard extends StatelessWidget {
               ],
             ),
             title: Text(
+              overflow: TextOverflow.ellipsis,
               group['name'],
               style: const TextStyle(
                 color: Colors.white,

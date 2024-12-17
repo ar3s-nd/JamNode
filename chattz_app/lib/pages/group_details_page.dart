@@ -54,7 +54,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
     try {
       Map<String, dynamic> user =
           await UserService().getUserDetailsById(currentUserId);
-      if (user['groups'].length >= numberOfGroupsPerPerson) {
+      if (user['groups'].length >= numberOfGroupsPerPersonGlobal) {
         throw 'You can only be a part of max 3 groups at a time';
       }
       Map<String, dynamic> updatedUser = {
@@ -120,9 +120,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
             'members': groupDetails['members'],
             'admins': groupDetails['admins'],
           };
-          debugPrint(
-              'Admin is empty: \nAdmins: ${groupDetails['members'].join(', ')}\nMembers: ${groupDetails['admins'].join(', ')}\n\n\n');
-
           await FirestoreServices()
               .updateGroupDetails(groupDetails['groupId'], updatedGroup);
           Message message = Message(
@@ -135,9 +132,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
           FirestoreServices().addMessage(groupDetails['groupId'], message);
         }
       } else {
-        debugPrint(
-            'Both are not empty: \nAdmins: ${groupDetails['members'].join(', ')}\nMembers: ${groupDetails['admins'].join(', ')}\n\n\n');
-
         Map<String, dynamic> updatedGroup = {
           'members': groupDetails['members'],
           'admins': groupDetails['admins'],
@@ -233,11 +227,11 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   // Updated build method for enhanced UI
   @override
   Widget build(BuildContext context) {
-    debugPrint(members.toString());
     return RefreshIndicator.adaptive(
       onRefresh: () async {
         setGroupDetails();
         setMemberDetails();
+        debugPrint(members.toString());
       },
       color: Colors.tealAccent,
       backgroundColor: Colors.black,
@@ -246,8 +240,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: BackButton(
-            color: Colors.white,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
             onPressed: () {
               checkPop();
             },
@@ -273,6 +267,50 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
             ),
           ),
           centerTitle: true,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (groupDetails['members'].contains(currentUserId)) {
+                    leaveGroup(currentUserId, true);
+                  } else {
+                    joinGroup();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      !groupDetails['members'].contains(currentUserId)
+                          ? Colors.greenAccent.shade700
+                          : Colors.red.shade900,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 10,
+                  shadowColor: !groupDetails['members'].contains(currentUserId)
+                      ? Colors.teal.shade600
+                      : Colors.redAccent.shade700,
+                ),
+                child: groupDetails['members'].contains(currentUserId)
+                    ? const Text(
+                        'Leave',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    : const Text(
+                        'Join',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            )
+          ],
         ),
         body: Container(
           height: MediaQuery.of(context).size.height,
@@ -298,6 +336,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16.0, vertical: 20.0),
                     child: Row(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center, // Align items properly
                       children: [
                         ImageCircle(
                           letter: groupDetails['name'][0].toUpperCase(),
@@ -305,84 +345,54 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                           fontSize: 30,
                           colors: [Colors.tealAccent.shade200, Colors.teal],
                         ),
-                        const Spacer(),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              groupDetails['name'] ?? 'Group Name',
-                              style: TextStyle(
-                                color: Colors.teal.shade400,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.people_outline,
-                                  color: Colors.white70,
-                                  size: 18,
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                groupDetails['name'] ?? 'Group Name',
+                                overflow: TextOverflow
+                                    .ellipsis, // Prevents text overflow
+                                style: TextStyle(
+                                  color: Colors.teal.shade400,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${groupDetails['members'].length} members',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.people_outline,
+                                    color: Colors.white70,
+                                    size: 18,
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (groupDetails['members']
-                                  .contains(currentUserId)) {
-                                leaveGroup(currentUserId, true);
-                              } else {
-                                joinGroup();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: !groupDetails['members']
-                                      .contains(currentUserId)
-                                  ? Colors.greenAccent.shade700
-                                  : Colors.red.shade900,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              elevation: 10,
-                              shadowColor: !groupDetails['members']
-                                      .contains(currentUserId)
-                                  ? Colors.teal.shade600
-                                  : Colors.redAccent.shade700,
-                            ),
-                            child:
-                                groupDetails['members'].contains(currentUserId)
-                                    ? const Text(
-                                        'Leave',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Join',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      '${groupDetails['members'].length} members',
+                                      overflow: TextOverflow
+                                          .ellipsis, // Prevents text overflow
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
                                       ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        )
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ),
