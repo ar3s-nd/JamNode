@@ -252,7 +252,7 @@ class _GetSkillLevelPage extends State<GetSkillLevelPage> {
       skill: skill,
       level: level,
       onChanged: updateSkill,
-      showSlider: false,
+      showSlider: true,
     );
   }
 }

@@ -12,6 +12,8 @@ class UserService {
 
   // update user info in firestore
   Future updateProfile(String id, Map<String, dynamic> userInfoMap) async {
+    debugPrint('at updateProfile ${userInfoMap['name']}');
+    debugPrint('${userInfoMap['groups']}');
     return await userCollection.doc(id).update(userInfoMap);
   }
 
@@ -29,14 +31,21 @@ class UserService {
       };
     }
     data['uid'] = data['uid'] as String;
-    data['collegeId'] = data['collegeId'] as String? ?? 'defaultCollegeId';
-    data['collegeName'] =
-        data['collegeName'] as String? ?? 'defaultCollegeName';
-    data['email'] = data['email'] as String? ?? 'defaultEmail';
-    data['name'] = data['name'] as String? ?? 'defaultName';
+    data['collegeId'] = data['collegeId'] as String? ?? '';
+    data['collegeName'] = data['collegeName'] as String? ?? '';
+    data['email'] = data['email'] as String? ?? '';
+    data['name'] = data['name'] as String? ?? '';
     data['gotDetails'] = data['gotDetails'] as bool? ?? false;
-    data['groups'] = List<String>.from(data['groups'] ?? []);
+    data['groups'] = List<String>.from(data['groups'] ?? ['hello moto']);
     data['skills'] = Map<String, int>.from(data['skills'] ?? {});
+    debugPrint('at parse ${data['name']}');
+    debugPrint(data['groups'].toString());
+    Map<String, int> sortedMap = Map.fromEntries(
+      data['skills'].entries.toList()
+        ..sort((MapEntry<String, int> a, MapEntry<String, int> b) =>
+            a.key.compareTo(b.key)),
+    );
+    data['skills'] = sortedMap;
     return data;
   }
 
@@ -46,10 +55,9 @@ class UserService {
       DocumentSnapshot documentSnapshot = await userCollection.doc(id).get();
       if (documentSnapshot.exists) {
         var data = documentSnapshot.data() as Map<String, dynamic>;
-        debugPrint('1');
+        // debugPrint(parse(data).toString());
         return parse(data);
       } else {
-        debugPrint('2');
         return {
           'uid': '123',
           'collegeId': 'collegeId',
@@ -63,9 +71,7 @@ class UserService {
       }
     } catch (e) {
       //  Use a logging framework instead of print
-      debugPrint(e.toString());
     }
-    debugPrint('3');
     return Future.value(
       {
         'uid': '123',
@@ -92,13 +98,11 @@ class UserService {
             Map<String, dynamic>.from(element.data() as Map<String, dynamic>);
         userMap[element.id] = parse(userMap[element.id]);
       }
-      debugPrint('4');
       return userMap;
     } catch (e) {
       // Use a logging framework instead of print
       debugPrint(e.toString());
     }
-    debugPrint('5');
     return Future.value(
       {
         'user1': {

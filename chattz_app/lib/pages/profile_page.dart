@@ -21,19 +21,33 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic> userData = {};
   bool isMe = false;
+  List<String> skills = [];
+
+  @override
+  void initState() {
+    super.initState();
+    userData = widget.userData;
+    isMe = userData['uid'] == FirebaseAuth.instance.currentUser!.uid;
+    skills = userData['skills'].keys.toList();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    userData = widget.userData;
-    isMe = userData['uid'] == FirebaseAuth.instance.currentUser!.uid;
-    List<String> skills = userData['skills'].keys.toList();
-    isMe = false;
 
     return RefreshIndicator.adaptive(
       onRefresh: () async {
-        setState(() {});
+        var newData = await UserService().getUserDetailsById(userData['uid']);
+        setState(() {
+          userData = newData;
+          skills = userData['skills'].keys.toList();
+        });
       },
       color: Colors.tealAccent,
       backgroundColor: Colors.black,
@@ -158,10 +172,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             const Spacer(),
                             if (isMe)
                               _buildMultiSelectDropDownField(
-                                label: 'Select Your Skills',
+                                label: 'Add Skills',
                                 items: skillsGlobal,
                                 onConfirm: (values) async {
                                   userData['skills'] = values;
+                                  skills = userData['skills'].keys.toList();
                                   await UserService()
                                       .updateProfile(userData['uid'], userData);
                                   setState(() {});
@@ -197,13 +212,15 @@ class _ProfilePageState extends State<ProfilePage> {
                             if (isMe) const Spacer(),
                             if (isMe)
                               _buildMultiSelectDropDownField(
-                                label: 'Select Your Skills',
+                                label: 'Add Skills',
                                 items: skillsGlobal,
                                 onConfirm: (values) async {
-                                  userData['skills'] = values;
+                                  setState(() {
+                                    userData['skills'] = values;
+                                    skills = values.keys.toList();
+                                  });
                                   await UserService()
                                       .updateProfile(userData['uid'], userData);
-                                  setState(() {});
                                 },
                               ),
                             const Spacer(),
@@ -230,8 +247,6 @@ class _ProfilePageState extends State<ProfilePage> {
     required List<String> items,
     required void Function(Map<String, int>) onConfirm,
   }) {
-    debugPrint(userData['skills'].keys.toString());
-    // userData['skills'].keys.toList();
     userData['skills'].removeWhere((key, value) => value == 0);
 
     return Column(
@@ -312,7 +327,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
             hint: Text(
-              'Update Skills',
+              'Add Skills',
               style: TextStyle(
                 color: Colors.teal[200],
                 fontWeight: FontWeight.w400,
@@ -322,12 +337,6 @@ class _ProfilePageState extends State<ProfilePage> {
             itemHeight: 48, // Limit the height of each dropdown item
           ),
         ),
-        const SizedBox(height: 8),
-        if (userData['skills'].isEmpty)
-          Text(
-            'Please select at least one',
-            style: TextStyle(color: Colors.red[700], fontSize: 12),
-          ),
       ],
     );
   }
@@ -345,6 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
       skill: skill,
       level: userData['skills'],
       onChanged: (String name, int value) async {
+        debugPrint('at skill slider1: ${userData['groups']}');
         // Check if the profile belongs to the current logged-in user
         bool pop = false;
         if (isMe) {
@@ -362,9 +372,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               );
               userData['skills'].remove(name);
+              skills = userData['skills'].keys.toList();
               pop = true;
             }
           });
+          debugPrint('at skill slider2: ${userData['skills']}');
           // Call the service to update the profile data
           await UserService().updateProfile(userData['uid'], userData);
         } else {

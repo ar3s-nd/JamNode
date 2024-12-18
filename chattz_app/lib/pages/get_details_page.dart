@@ -93,9 +93,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
       body: RefreshIndicator.adaptive(
         color: Colors.tealAccent,
         backgroundColor: Colors.black,
-        onRefresh: () {
+        onRefresh: () async {
           setState(() {});
-          return Future<void>.value();
         },
         child: Container(
           height: MediaQuery.of(context).size.height,
@@ -414,13 +413,11 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
               );
             }).toList(),
             selectedItemBuilder: (BuildContext context) {
-              // Show "Select Interests" always as the selected item
+              // Show "Select Skills" always as the selected item
               return items.map((_) {
                 return Text(
-                  _selectedSkills.isNotEmpty
-                      ? _selectedSkills.join(', ')
-                      : 'Select Interests',
-                  // 'Select Interests',
+                  _selectedSkills.isNotEmpty ? 'Add Skills' : 'Select Skills',
+                  // 'Select Skills',
                   style: TextStyle(
                     color: Colors.teal[200],
                     fontWeight: FontWeight.w400,

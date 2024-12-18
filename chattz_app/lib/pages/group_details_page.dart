@@ -232,6 +232,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
         setGroupDetails();
         setMemberDetails();
         debugPrint(members.toString());
+        debugPrint(groupDetails.toString());
+        setState(() {});
       },
       color: Colors.tealAccent,
       backgroundColor: Colors.black,

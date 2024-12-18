@@ -1,4 +1,5 @@
 import 'package:chattz_app/components/image_circle.dart';
+import 'package:chattz_app/pages/profile_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -57,11 +58,24 @@ class UserListCard extends StatelessWidget {
               title: Row(
                 children: [
                   // Enhanced Avatar
-                  ImageCircle(
-                    letter: member['name'][0].toUpperCase(),
-                    circleRadius: 16,
-                    fontSize: 20,
-                    colors: [Colors.tealAccent.shade200, Colors.teal],
+                  GestureDetector(
+                    onTap: () {
+                      if (!isMe) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ProfilePage(
+                              userData: member,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: ImageCircle(
+                      letter: member['name'][0].toUpperCase(),
+                      circleRadius: 16,
+                      fontSize: 20,
+                      colors: [Colors.tealAccent.shade200, Colors.teal],
+                    ),
                   ),
                   SizedBox(width: MediaQuery.of(context).size.width * 0.031),
                   Expanded(
