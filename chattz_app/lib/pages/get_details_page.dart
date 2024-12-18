@@ -1,3 +1,5 @@
+import 'package:chattz_app/components/auto_complete_text_field.dart';
+import 'package:chattz_app/components/details_textfield.dart';
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/auth_page.dart';
 import 'package:chattz_app/pages/get_skill_level_page.dart';
@@ -42,6 +44,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
     _collegeNameController.dispose();
     _rollNumberController.dispose();
     super.dispose();
@@ -152,8 +156,10 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         ),
                       ),
                     ),
+
+                    // Name
                     const SizedBox(height: 48),
-                    _buildTextField(
+                    DetailsTextField(
                       controller: _nameController,
                       label: 'Name',
                       validator: (value) {
@@ -163,8 +169,10 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         return null;
                       },
                     ),
+
+                    // Email
                     const SizedBox(height: 24),
-                    _buildTextField(
+                    DetailsTextField(
                       controller: _emailController,
                       label: 'Your email',
                       validator: (value) {
@@ -182,8 +190,10 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         fontSize: 12,
                       ),
                     ),
+
+                    // College Name
                     const SizedBox(height: 24),
-                    _buildTextField(
+                    AutoCompleteTextField(
                       controller: _collegeNameController,
                       label: 'College Name',
                       validator: (value) {
@@ -192,9 +202,12 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         }
                         return null;
                       },
+                      suggestions: collegeNamesGlobal,
                     ),
+
+                    // Roll Number
                     const SizedBox(height: 24),
-                    _buildTextField(
+                    DetailsTextField(
                       controller: _rollNumberController,
                       label: 'Roll Number',
                       validator: (value) {
@@ -204,6 +217,8 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                         return null;
                       },
                     ),
+
+                    // Skills
                     const SizedBox(height: 24),
                     _buildMultiSelectDropDownField(
                       label: 'Select Your Skills',
@@ -301,66 +316,6 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-    TextStyle? errorStyle,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      cursorColor: Colors.teal[300],
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 16, // Slightly larger font for readability
-        fontWeight: FontWeight.w500, // Semi-bold for better focus
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          color: Colors.teal[200],
-          fontSize: 14, // Consistent sizing for label text
-        ),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(
-              color: Colors.grey[700]!), // Darker grey for enabled state
-        ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.teal[300]!, // Slightly brighter teal for focus
-            width: 2, // Slightly thicker underline for focus
-          ),
-        ),
-        errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.red,
-            width: 2, // Consistent thickness for error state
-          ),
-        ),
-        errorStyle: errorStyle ??
-            const TextStyle(
-              color: Colors.redAccent, // Subtle error color
-              fontSize: 12, // Slightly smaller for less distraction
-              fontWeight: FontWeight.w400,
-            ),
-        contentPadding: const EdgeInsets.symmetric(
-            vertical: 12), // Adjust padding for better spacing
-        hintText: 'Enter $label', // Provide a helpful hint
-        hintStyle: TextStyle(
-          color: Colors.grey[600], // Subtle hint text
-          fontSize: 14,
-          fontWeight: FontWeight.w300,
-        ),
-      ),
-      validator: validator,
-    );
-  }
-
   Widget _buildMultiSelectDropDownField({
     required String label,
     required List<String> items,
@@ -429,24 +384,14 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
               if (value != null) {
                 setState(() {
                   // Only include 'None of them' if _selectedSkills is empty
-                  if (_selectedSkills.isEmpty) {
-                    if (!items.contains('None of them')) {
-                      items = ['None of them', ...items];
-                    }
+                  if (value == 'None of them') {
+                    _selectedSkills = ['None of them'];
                   } else {
-                    items.remove('None of them');
-                  }
-
-                  if (value == 'None of them' && _selectedSkills.isEmpty) {
-                    _selectedSkills.add('None of them');
-                  } else if (value != 'None of them') {
                     _selectedSkills.remove('None of them');
                     if (!_selectedSkills.contains(value)) {
                       _selectedSkills.add(value);
                     }
                   }
-
-                  // Call the onConfirm callback with the updated selected skills
                   onConfirm(_selectedSkills);
                 });
               }

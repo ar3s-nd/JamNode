@@ -1,3 +1,4 @@
+import 'package:chattz_app/components/details_textfield.dart';
 import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/models/message.dart';
@@ -21,6 +22,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   Map<String, dynamic> groupDetails = {};
   Map<String, Map<String, dynamic>> members = {};
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  bool isUpdating = false;
+  TextEditingController controller = TextEditingController();
 
   void showErrorMessage(String errorMessage) {
     checkPop();
@@ -231,8 +234,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
       onRefresh: () async {
         setGroupDetails();
         setMemberDetails();
-        debugPrint(members.toString());
-        debugPrint(groupDetails.toString());
         setState(() {});
       },
       color: Colors.tealAccent,
@@ -352,16 +353,21 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                groupDetails['name'] ?? 'Group Name',
-                                overflow: TextOverflow
-                                    .ellipsis, // Prevents text overflow
-                                style: TextStyle(
-                                  color: Colors.teal.shade400,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              !isUpdating
+                                  ? Text(
+                                      groupDetails['name'] ?? 'Group Name',
+                                      overflow: TextOverflow
+                                          .ellipsis, // Prevents text overflow
+                                      style: TextStyle(
+                                        color: Colors.teal.shade400,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : DetailsTextField(
+                                      controller: controller,
+                                      label: "Group Name",
+                                    ),
                               const SizedBox(height: 4),
                               Row(
                                 children: [
@@ -389,10 +395,25 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                           ),
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.edit_rounded,
-                            color: Colors.white,
+                          onPressed: () {
+                            setState(() {
+                              isUpdating = !isUpdating;
+                              if (isUpdating) {
+                                controller.text = groupDetails['name'];
+                              } else {
+                                groupDetails['name'] = controller.text;
+                                FirestoreServices().updateGroupDetails(
+                                    groupDetails['groupId'], {
+                                  'name': controller.text,
+                                });
+                              }
+                            });
+                          },
+                          icon: Icon(
+                            isUpdating
+                                ? Icons.check_rounded
+                                : Icons.edit_rounded,
+                            color: Colors.tealAccent,
                           ),
                         ),
                       ],

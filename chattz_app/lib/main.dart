@@ -8,6 +8,7 @@ List<String> skillsGlobal = [];
 int numberOfGroupsPerPersonGlobal = 5;
 int timeOutForGroupsGlobal = 5;
 List<String> groupNamesGlobal = [];
+List<String> collegeNamesGlobal = [];
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ void main() async {
 
   groupNamesGlobal = List<String>.from(basic['groupNames'] ?? []);
   skillsGlobal = List<String>.from(basic['skills'] ?? []);
+  collegeNamesGlobal = List<String>.from(basic['collegeNames'] ?? []);
   skillsGlobal.sort();
   numberOfGroupsPerPersonGlobal = basic['numberOfGroupsPerPerson'] as int;
   timeOutForGroupsGlobal = basic['timeoutForGroups'] as int;

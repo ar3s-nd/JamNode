@@ -68,9 +68,8 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    Random random = Random();
     String groupName =
-        groupNamesGlobal[random.nextInt(groupNamesGlobal.length)];
+        groupNamesGlobal[Random().nextInt(groupNamesGlobal.length)];
 
     // Create a new group
     Map<String, dynamic> newGroup = {

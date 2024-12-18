@@ -67,8 +67,9 @@ class FirestoreServices {
       }
 
       String id = generateRandomString(20);
-      DocumentReference groupDocRef =
-          _firestore.collection('Groups').doc('${id}_${groupData['name']}');
+      DocumentReference groupDocRef = _firestore.collection('Groups').doc(
+            '${id}___${user['uid']}',
+          );
       // set the group Data
       await groupDocRef.set(groupData);
 
