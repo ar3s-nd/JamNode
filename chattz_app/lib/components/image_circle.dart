@@ -20,7 +20,6 @@ class ImageCircle1 extends StatelessWidget {
       height: circleRadius * 2,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          // colors: [Colors.tealAccent.shade200, Colors.teal],
           colors: colors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

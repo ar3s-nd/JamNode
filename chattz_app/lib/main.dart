@@ -19,9 +19,10 @@ void main() async {
   Map<String, dynamic> basic =
       await FirestoreServices().getAppDataAndSettings();
 
-  groupNamesGlobal = List<String>.from(basic['groupNames'] ?? []);
-  skillsGlobal = List<String>.from(basic['skills'] ?? []);
-  collegeNamesGlobal = List<String>.from(basic['collegeNames'] ?? []);
+  groupNamesGlobal = List<String>.from(basic['groupNames'] ?? ['JamBuds']);
+  skillsGlobal = List<String>.from(basic['skills'] ?? ['Guitar']);
+  collegeNamesGlobal =
+      List<String>.from(basic['collegeNames'] ?? ['IIT Bombay']);
   skillsGlobal.sort();
   numberOfGroupsPerPersonGlobal = basic['numberOfGroupsPerPerson'] as int;
   timeOutForGroupsGlobal = basic['timeoutForGroups'] as int;

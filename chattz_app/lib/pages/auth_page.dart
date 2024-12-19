@@ -49,7 +49,6 @@ class AuthPageState extends State<AuthPage> {
                       rollNumber: userDetailsSnapshot.data?['collegeId'] ?? '',
                       skills: List<String>.from(
                           userDetailsSnapshot.data?['skills'].keys),
-                      //TODO check if this works
                     );
                   }
                 },

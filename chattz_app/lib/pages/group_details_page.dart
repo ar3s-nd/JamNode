@@ -261,7 +261,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                 TextSpan(
                   text: 'Node',
                   style: TextStyle(
-                    color: Colors.teal.shade400,
+                    color: Colors.teal.shade300,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
@@ -270,50 +270,6 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
             ),
           ),
           centerTitle: true,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 10.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  if (groupDetails['members'].contains(currentUserId)) {
-                    leaveGroup(currentUserId, true);
-                  } else {
-                    joinGroup();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      !groupDetails['members'].contains(currentUserId)
-                          ? Colors.greenAccent.shade700
-                          : Colors.red.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 10,
-                  shadowColor: !groupDetails['members'].contains(currentUserId)
-                      ? Colors.teal.shade600
-                      : Colors.redAccent.shade700,
-                ),
-                child: groupDetails['members'].contains(currentUserId)
-                    ? const Text(
-                        'Leave',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      )
-                    : const Text(
-                        'Join',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            )
-          ],
         ),
         body: Container(
           height: MediaQuery.of(context).size.height,
@@ -359,7 +315,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                                       overflow: TextOverflow
                                           .ellipsis, // Prevents text overflow
                                       style: TextStyle(
-                                        color: Colors.teal.shade400,
+                                        color: Colors.teal.shade300,
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -384,7 +340,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                                           .ellipsis, // Prevents text overflow
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w400,
                                       ),
                                     ),
@@ -432,7 +388,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                       child: Row(
                         children: [
                           Icon(Icons.calendar_today_outlined,
-                              color: Colors.teal.shade400),
+                              color: Colors.teal.shade300),
                           const SizedBox(width: 8),
                           Text(
                             'Jam started on ${groupDetails['createdOn']}',
@@ -448,23 +404,72 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
                   ),
 
                   // Members List Section Title
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 20.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.group, color: Colors.teal.shade400),
-                        const SizedBox(width: 15),
-                        Text(
-                          '${groupDetails['members'].length} Members',
-                          style: TextStyle(
-                            color: Colors.teal.shade400,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 20.0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.group, color: Colors.teal.shade300),
+                            const SizedBox(width: 15),
+                            Text(
+                              '${groupDetails['members'].length} Members',
+                              style: TextStyle(
+                                color: Colors.teal.shade300,
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (groupDetails['members']
+                                .contains(currentUserId)) {
+                              leaveGroup(currentUserId, true);
+                            } else {
+                              joinGroup();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                !groupDetails['members'].contains(currentUserId)
+                                    ? Colors.greenAccent.shade700
+                                    : Colors.red.shade900,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            elevation: 10,
+                            shadowColor:
+                                !groupDetails['members'].contains(currentUserId)
+                                    ? Colors.teal.shade600
+                                    : Colors.redAccent.shade700,
+                          ),
+                          child: groupDetails['members'].contains(currentUserId)
+                              ? const Text(
+                                  'Leave',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                )
+                              : const Text(
+                                  'Join',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      )
+                    ],
                   ),
 
                   // List of members with dropdown for details
