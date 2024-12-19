@@ -30,11 +30,13 @@ class _GetSkillLevelPage extends State<GetSkillLevelPage> {
   }
 
   void updateSkill(String skill, int value) {
-    setState(() {
-      level[skill] = value;
-      // Check if any skill slider has been updated
-      isSkillUpdated = level.values.any((value) => value > 0);
-    });
+    if (mounted) {
+      setState(() {
+        level[skill] = value;
+        // Check if any skill slider has been updated
+        isSkillUpdated = level.values.any((value) => value > 0);
+      });
+    }
   }
 
   checkPop() {
@@ -113,7 +115,7 @@ class _GetSkillLevelPage extends State<GetSkillLevelPage> {
 
     return RefreshIndicator.adaptive(
       onRefresh: () async {
-        setState(() {});
+        if (mounted) setState(() {});
       },
       color: Colors.tealAccent,
       backgroundColor: Colors.black,

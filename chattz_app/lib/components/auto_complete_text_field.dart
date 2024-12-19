@@ -80,20 +80,21 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
           ),
           validator: widget.validator,
           onChanged: (value) {
-            setState(() {
-              if (value.isEmpty) {
-                filteredSuggestions = [];
-                errorMessage = null;
-              } else {
-                filteredSuggestions = widget.suggestions
-                    .where((college) => college.toLowerCase().startsWith(
-                        value.toLowerCase())) // Case-insensitive matching
-                    .toList();
-                errorMessage = filteredSuggestions.isEmpty
-                    ? 'No matching suggestions found'
-                    : null;
-              }
-            });
+            if (mounted)
+              setState(() {
+                if (value.isEmpty) {
+                  filteredSuggestions = [];
+                  errorMessage = null;
+                } else {
+                  filteredSuggestions = widget.suggestions
+                      .where((college) => college.toLowerCase().startsWith(
+                          value.toLowerCase())) // Case-insensitive matching
+                      .toList();
+                  errorMessage = filteredSuggestions.isEmpty
+                      ? 'No matching suggestions found'
+                      : null;
+                }
+              });
           },
         ),
         if (filteredSuggestions.isNotEmpty)
@@ -111,9 +112,10 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
                 return GestureDetector(
                   onTap: () {
                     widget.controller.text = filteredSuggestions[index];
-                    setState(() {
-                      filteredSuggestions = [];
-                    });
+                    if (mounted)
+                      setState(() {
+                        filteredSuggestions = [];
+                      });
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(

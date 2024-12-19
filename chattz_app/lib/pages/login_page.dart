@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
       color: Colors.tealAccent,
       backgroundColor: Colors.black,
       onRefresh: () async {
-        setState(() {});
+        if (mounted) setState(() {});
       },
       child: Scaffold(
         backgroundColor: Colors.transparent,

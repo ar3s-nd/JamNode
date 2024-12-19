@@ -110,21 +110,24 @@ class _DetailsCardState extends State<DetailsCard> {
             if (isUpdatable && isMe)
               IconButton(
                 onPressed: () {
-                  setState(() {
-                    if (isUpdating) {
-                      // If updating, check if the entered value is in the suggestions (only for 'College Name')
-                      if (label == 'College Name' &&
-                          !collegeNamesGlobal.contains(controller.text)) {
-                        controller.text = value; // Revert to the previous value
-                      } else {
-                        value = controller.text; // Accept the new valid value
+                  if (mounted) {
+                    setState(() {
+                      if (isUpdating) {
+                        // If updating, check if the entered value is in the suggestions (only for 'College Name')
+                        if (label == 'College Name' &&
+                            !collegeNamesGlobal.contains(controller.text)) {
+                          controller.text =
+                              value; // Revert to the previous value
+                        } else {
+                          value = controller.text; // Accept the new valid value
+                        }
                       }
-                    }
-                    isUpdating = !isUpdating;
-                    if (!isUpdating) {
-                      update(value);
-                    }
-                  });
+                      isUpdating = !isUpdating;
+                      if (!isUpdating) {
+                        update(value);
+                      }
+                    });
+                  }
                 },
                 icon: Icon(
                   isUpdating ? Icons.check_rounded : Icons.edit_rounded,

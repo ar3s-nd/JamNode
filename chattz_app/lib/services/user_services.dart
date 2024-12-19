@@ -1,3 +1,4 @@
+import 'package:chattz_app/services/firestore_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -93,11 +94,21 @@ class UserService {
       QuerySnapshot querySnapshot =
           await userCollection.where('groups', arrayContains: groupId).get();
       Map<String, Map<String, dynamic>> userMap = {};
+      var group = await FirestoreServices().getGroupDetailsByGroupId(groupId);
+      List<String> admins = List<String>.from(group['admins']);
       for (var element in querySnapshot.docs) {
         userMap[element.id] =
             Map<String, dynamic>.from(element.data() as Map<String, dynamic>);
         userMap[element.id] = parse(userMap[element.id]);
       }
+      userMap = Map.fromEntries(userMap.entries.toList()
+        ..sort((a, b) {
+          bool aIsAdmin = admins.contains(a.key);
+          bool bIsAdmin = admins.contains(b.key);
+          if (aIsAdmin && !bIsAdmin) return -1;
+          if (!aIsAdmin && bIsAdmin) return 1;
+          return 0;
+        }));
       return userMap;
     } catch (e) {
       // Use a logging framework instead of print

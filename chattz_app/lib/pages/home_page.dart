@@ -3,12 +3,15 @@ import 'dart:math';
 import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/chat_page.dart';
+import 'package:chattz_app/pages/group_details_page.dart';
 import 'package:chattz_app/pages/profile_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
+import 'package:chattz_app/widgets/group_details_page_body.dart';
 import 'package:chattz_app/widgets/group_list_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,14 +21,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isShownAsTiles = true;
   String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   Map<String, Map<String, dynamic>> groups = {};
   Map<String, dynamic> userDetails = {};
   String user = 'J';
-  bool isActiveGroupShown = true;
+  bool isActiveGroupShown = false;
   Map<String, Map<String, dynamic>> activeGroups = {};
   Map<String, Map<String, dynamic>> myGroups = {};
+  PageController pageController = PageController();
 
   @override
   void initState() {
@@ -94,8 +97,8 @@ class _HomePageState extends State<HomePage> {
     try {
       Map<String, dynamic> user =
           await UserService().getUserDetailsById(currentUserId);
-      if (user['groups'].length >= 3) {
-        throw 'You can only be a part of max 3 groups at a time';
+      if (user['groups'].length >= numberOfGroupsPerPersonGlobal) {
+        throw 'You can only be a part of max $numberOfGroupsPerPersonGlobal groups at a time';
       }
       newGroup = await FirestoreServices().createGroup(user, newGroup);
 
@@ -186,7 +189,7 @@ class _HomePageState extends State<HomePage> {
           ),
           title: RichText(
             text: TextSpan(
-              text: 'Jam',
+              text: isActiveGroupShown ? 'Active ' : 'My ',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -194,7 +197,7 @@ class _HomePageState extends State<HomePage> {
               ),
               children: [
                 TextSpan(
-                  text: 'Node',
+                  text: 'Jams',
                   style: TextStyle(
                     color: Colors.teal.shade400,
                     fontSize: 26,
@@ -206,14 +209,17 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: [
             IconButton(
-              icon: isShownAsTiles
-                  ? const Icon(Icons.format_list_bulleted_rounded)
-                  : const Icon(Icons.grid_view_rounded),
+              icon: isActiveGroupShown
+                  // ? const ImageIcon(AssetImage('assets/images/other_icon.png'))
+                  ? const Icon(Icons.pages_rounded)
+                  : const ImageIcon(AssetImage('assets/images/my_icon.png')),
               color: Colors.teal.shade400,
               onPressed: () {
-                setState(() {
-                  isShownAsTiles = !isShownAsTiles;
-                });
+                if (mounted) {
+                  setState(() {
+                    isActiveGroupShown = !isActiveGroupShown;
+                  });
+                }
               },
             ),
             IconButton(
@@ -243,18 +249,18 @@ class _HomePageState extends State<HomePage> {
             ),
             child: SafeArea(
               child: groups.isNotEmpty
-                  ? isShownAsTiles
-                      ? _buildGroupsPageAsTile()
-                      : _buildGroupsPageAsCard()
+                  ? isActiveGroupShown
+                      ? _buildActiveGroups()
+                      : _buildMyGroups()
                   : _buildEmptyGroupsPage(),
             ),
           ),
         ),
 
         floatingActionButton: Offstage(
-          offstage: groups.isEmpty ||
+          offstage: activeGroups.isEmpty ||
               (!isActiveGroupShown && myGroups.isEmpty) ||
-              (isActiveGroupShown && activeGroups.isEmpty),
+              isActiveGroupShown,
           child: FloatingActionButton(
             onPressed: () {
               createGroup();
@@ -264,73 +270,6 @@ class _HomePageState extends State<HomePage> {
               Icons.add,
               size: 32,
               color: Colors.black,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggleButtons({
-    required String text1,
-    required String text2,
-    required bool isButtonForActive,
-  }) {
-    bool isActive = isActiveGroupShown == isButtonForActive;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            isActiveGroupShown = isButtonForActive;
-          });
-        },
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(vertical: 14.0),
-          margin: const EdgeInsets.symmetric(horizontal: 8.0),
-          decoration: BoxDecoration(
-            color: !isActive ? Colors.grey.shade800 : null,
-            gradient: isActive
-                ? LinearGradient(
-                    colors: [
-                      Colors.black,
-                      Colors.teal.shade900,
-                    ],
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              if (isActive)
-                BoxShadow(
-                  color: Colors.tealAccent.withOpacity(0.8),
-                  blurRadius: 6,
-                  offset: const Offset(0, 4),
-                ),
-            ],
-          ),
-          child: RichText(
-            text: TextSpan(
-              text: text1,
-              style: TextStyle(
-                color: isActive ? Colors.white : Colors.grey.shade400,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-              children: [
-                TextSpan(
-                  text: text2,
-                  style: TextStyle(
-                    color: isActive
-                        ? Colors.tealAccent[700]
-                        : Colors.grey.shade500,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
             ),
           ),
         ),
@@ -358,50 +297,46 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildActiveGroups() {
-    return activeGroups.isNotEmpty
-        ? _buildGroupsList(groupsToShow: activeGroups)
-        : _buildEmptyGroupsPage();
-  }
-
   Widget _buildMyGroups() {
     return myGroups.isNotEmpty
         ? _buildGroupsList(groupsToShow: myGroups)
         : _buildEmptyGroupsPage();
   }
 
-  Widget _buildGroupsPageAsTile() {
-    return Column(
+  Widget _buildActiveGroups() {
+    return Stack(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: PageView(
+            physics: const BouncingScrollPhysics(),
+            controller: pageController,
             children: [
-              _buildToggleButtons(
-                text1: 'Active ',
-                text2: 'Jams',
-                isButtonForActive: true, // Button for Active Jams
-              ),
-              _buildToggleButtons(
-                text1: 'My ',
-                text2: 'Jams',
-                isButtonForActive: false, // Button for My Jams
-              ),
+              for (String key in activeGroups.keys)
+                GroupDetailsPageBody(groupDetails: activeGroups[key]!),
             ],
           ),
         ),
-        const SizedBox(height: 16.0),
-        // Return the respective page
-        Expanded(
-          child: isActiveGroupShown ? _buildActiveGroups() : _buildMyGroups(),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height * 0.05,
+            ),
+            child: SmoothPageIndicator(
+              controller: pageController,
+              count: activeGroups.length,
+              effect: ExpandingDotsEffect(
+                dotColor: Colors.tealAccent.shade100,
+                activeDotColor: Colors.teal.shade900,
+                dotHeight: 10,
+                dotWidth: 14,
+              ),
+            ),
+          ),
         ),
       ],
     );
-  }
-
-  Widget _buildGroupsPageAsCard() {
-    return const Center();
   }
 
   Widget _buildEmptyGroupsPage() {

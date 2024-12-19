@@ -43,6 +43,8 @@ dependencies:
   intl: ^0.20.1
   profanity_filter: ^2.0.0
   rounded_loading_button_plus: ^3.0.1
+  google_nav_bar: ^5.0.7
+  smooth_page_indicator: ^1.2.0+3
 
 dev_dependencies:
   flutter_test:

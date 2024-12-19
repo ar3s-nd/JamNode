@@ -98,7 +98,9 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
         color: Colors.tealAccent,
         backgroundColor: Colors.black,
         onRefresh: () async {
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         },
         child: Container(
           height: MediaQuery.of(context).size.height,
@@ -224,9 +226,11 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                       label: 'Select Your Skills',
                       items: skillsGlobal,
                       onConfirm: (values) {
-                        setState(() {
-                          _selectedSkills = values;
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _selectedSkills = values;
+                          });
+                        }
                       },
                     ),
                     const SizedBox(height: 48),
@@ -382,18 +386,20 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
             },
             onChanged: (value) {
               if (value != null) {
-                setState(() {
-                  // Only include 'None of them' if _selectedSkills is empty
-                  if (value == 'None of them') {
-                    _selectedSkills = ['None of them'];
-                  } else {
-                    _selectedSkills.remove('None of them');
-                    if (!_selectedSkills.contains(value)) {
-                      _selectedSkills.add(value);
+                if (mounted) {
+                  setState(() {
+                    // Only include 'None of them' if _selectedSkills is empty
+                    if (value == 'None of them') {
+                      _selectedSkills = ['None of them'];
+                    } else {
+                      _selectedSkills.remove('None of them');
+                      if (!_selectedSkills.contains(value)) {
+                        _selectedSkills.add(value);
+                      }
                     }
-                  }
-                  onConfirm(_selectedSkills);
-                });
+                    onConfirm(_selectedSkills);
+                  });
+                }
               }
             },
             hint: Text(
@@ -416,10 +422,12 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
               backgroundColor: Colors.teal[900],
               deleteIcon: const Icon(Icons.close, color: Colors.white),
               onDeleted: () {
-                setState(() {
-                  _selectedSkills.remove(course);
-                  onConfirm(_selectedSkills);
-                });
+                if (mounted) {
+                  setState(() {
+                    _selectedSkills.remove(course);
+                    onConfirm(_selectedSkills);
+                  });
+                }
               },
             );
           }).toList(),

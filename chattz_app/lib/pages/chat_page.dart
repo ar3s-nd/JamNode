@@ -104,9 +104,11 @@ class _ChatPageState extends State<ChatPage> {
             _scrollController.position.maxScrollExtent - 100;
 
         if (shouldShowButton != _showScrollButton) {
-          setState(() {
-            _showScrollButton = shouldShowButton;
-          });
+          if (mounted) {
+            setState(() {
+              _showScrollButton = shouldShowButton;
+            });
+          }
         }
       }
     });
@@ -371,25 +373,27 @@ class _ChatPageState extends State<ChatPage> {
                             const Icon(Icons.send_rounded, color: Colors.white),
                         onPressed: () {
                           if (_messageController.text.isNotEmpty) {
-                            setState(() {
-                              Message message = Message(
-                                id: DateTime.now().toString(),
-                                text: _messageController.text,
-                                senderUserId: userId,
-                                timestamp: DateTime.now(),
-                              );
-                              String date = message.timestamp.toString();
-                              if (_messages.containsKey(date)) {
-                                _messages[date]!.add(message);
-                              } else {
-                                _messages[date] = [message];
-                              }
-                              FirestoreServices().addMessage(
-                                groupDetails['groupId'],
-                                message,
-                              );
-                              _messageController.clear();
-                            });
+                            if (mounted) {
+                              setState(() {
+                                Message message = Message(
+                                  id: DateTime.now().toString(),
+                                  text: _messageController.text,
+                                  senderUserId: userId,
+                                  timestamp: DateTime.now(),
+                                );
+                                String date = message.timestamp.toString();
+                                if (_messages.containsKey(date)) {
+                                  _messages[date]!.add(message);
+                                } else {
+                                  _messages[date] = [message];
+                                }
+                                FirestoreServices().addMessage(
+                                  groupDetails['groupId'],
+                                  message,
+                                );
+                                _messageController.clear();
+                              });
+                            }
                             _scrollToBottom();
                           }
                         },
@@ -409,9 +413,11 @@ class _ChatPageState extends State<ChatPage> {
                   color: Colors.white,
                   icon: const Icon(Icons.arrow_downward_rounded),
                   onPressed: () {
-                    setState(() {
-                      _scrollToBottom();
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _scrollToBottom();
+                      });
+                    }
                   },
                 ),
               ),

@@ -44,10 +44,12 @@ class _ProfilePageState extends State<ProfilePage> {
     return RefreshIndicator.adaptive(
       onRefresh: () async {
         var newData = await UserService().getUserDetailsById(userData['uid']);
-        setState(() {
-          userData = newData;
-          skills = userData['skills'].keys.toList();
-        });
+        if (mounted) {
+          setState(() {
+            userData = newData;
+            skills = userData['skills'].keys.toList();
+          });
+        }
       },
       color: Colors.tealAccent,
       backgroundColor: Colors.black,
@@ -101,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       userData['name'] = text;
                       await UserService()
                           .updateProfile(userData['uid'], userData);
-                      setState(() {});
+                      if (mounted) setState(() {});
                     },
                     icon: Icons.person,
                     label: 'Name',
@@ -128,7 +130,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       userData['collegeId'] = text;
                       await UserService()
                           .updateProfile(userData['uid'], userData);
-                      setState(() {});
+                      if (mounted) {
+                        setState(() {});
+                      }
                     },
                     icon: Icons.school,
                     label: 'College ID',
@@ -144,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       userData['collegeName'] = text;
                       await UserService()
                           .updateProfile(userData['uid'], userData);
-                      setState(() {});
+                      if (mounted) (() {});
                     },
                     icon: Icons.badge_outlined,
                     label: 'College Name',
@@ -179,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   skills = userData['skills'].keys.toList();
                                   await UserService()
                                       .updateProfile(userData['uid'], userData);
-                                  setState(() {});
+                                  if (mounted) setState(() {});
                                 },
                               ),
                           ],
@@ -215,10 +219,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                 label: 'Add Skills',
                                 items: skillsGlobal,
                                 onConfirm: (values) async {
-                                  setState(() {
-                                    userData['skills'] = values;
-                                    skills = values.keys.toList();
-                                  });
+                                  if (mounted) {
+                                    setState(() {
+                                      userData['skills'] = values;
+                                      skills = values.keys.toList();
+                                    });
+                                  }
                                   await UserService()
                                       .updateProfile(userData['uid'], userData);
                                 },
@@ -308,22 +314,24 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             onChanged: (value) {
               if (value != null) {
-                setState(() {
-                  // Add the selected skill to the user's profile
-                  if (!userData['skills'].containsKey(value)) {
-                    userData['skills'][value] = 1;
-                    Map<String, int> sortedMap = Map.fromEntries(
-                      userData['skills'].entries.toList()
-                        ..sort((MapEntry<String, int> a,
-                                MapEntry<String, int> b) =>
-                            a.key.compareTo(b.key)),
-                    );
-                    userData['skills'] = sortedMap;
-                  }
+                if (mounted) {
+                  setState(() {
+                    // Add the selected skill to the user's profile
+                    if (!userData['skills'].containsKey(value)) {
+                      userData['skills'][value] = 1;
+                      Map<String, int> sortedMap = Map.fromEntries(
+                        userData['skills'].entries.toList()
+                          ..sort((MapEntry<String, int> a,
+                                  MapEntry<String, int> b) =>
+                              a.key.compareTo(b.key)),
+                      );
+                      userData['skills'] = sortedMap;
+                    }
 
-                  // Call the onConfirm callback with the updated selected skills
-                  onConfirm(userData['skills']);
-                });
+                    // Call the onConfirm callback with the updated selected skills
+                    onConfirm(userData['skills']);
+                  });
+                }
               }
             },
             hint: Text(
@@ -359,23 +367,25 @@ class _ProfilePageState extends State<ProfilePage> {
         bool pop = false;
         if (isMe) {
           // If it matches, update the value
-          setState(() {
-            userData['skills'][name] = value; // Update the skill level
-            if (value == 0) {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return Center(
-                      child: CircularProgressIndicator(
-                    color: Colors.teal[900],
-                  ));
-                },
-              );
-              userData['skills'].remove(name);
-              skills = userData['skills'].keys.toList();
-              pop = true;
-            }
-          });
+          if (mounted) {
+            setState(() {
+              userData['skills'][name] = value; // Update the skill level
+              if (value == 0) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Center(
+                        child: CircularProgressIndicator(
+                      color: Colors.teal[900],
+                    ));
+                  },
+                );
+                userData['skills'].remove(name);
+                skills = userData['skills'].keys.toList();
+                pop = true;
+              }
+            });
+          }
           debugPrint('at skill slider2: ${userData['skills']}');
           // Call the service to update the profile data
           await UserService().updateProfile(userData['uid'], userData);
