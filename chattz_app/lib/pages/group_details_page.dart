@@ -72,8 +72,27 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
           ),
           centerTitle: true,
         ),
-        body: GroupDetailsPageBody(
-          groupDetails: widget.groupDetails,
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.grey.shade900,
+                Colors.black,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: GroupDetailsPageBody(
+                groupDetails: widget.groupDetails,
+              ),
+            ),
+          ),
         ),
       ),
     );

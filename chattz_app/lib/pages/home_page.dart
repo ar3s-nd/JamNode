@@ -7,6 +7,7 @@ import 'package:chattz_app/pages/group_details_page.dart';
 import 'package:chattz_app/pages/profile_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
+import 'package:chattz_app/widgets/error_dialog.dart';
 import 'package:chattz_app/widgets/group_details_page_body.dart';
 import 'package:chattz_app/widgets/group_list_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, Map<String, dynamic>> groups = {};
   Map<String, dynamic> userDetails = {};
   String user = 'J';
-  bool isActiveGroupShown = false;
+  bool isActiveGroupShown = true;
   Map<String, Map<String, dynamic>> activeGroups = {};
   Map<String, Map<String, dynamic>> myGroups = {};
   PageController pageController = PageController();
@@ -226,7 +227,15 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.logout),
               color: Colors.teal.shade400,
               onPressed: () async {
-                await FirebaseAuth.instance.signOut();
+                ErrorDialog.show(
+                    context: context,
+                    title: 'Logout',
+                    description: 'Are you sure you want to logout?',
+                    text1: "Logout",
+                    text2: "Cancel",
+                    onRetry: () async {
+                      await FirebaseAuth.instance.signOut();
+                    });
               },
             ),
           ],
@@ -239,8 +248,8 @@ class _HomePageState extends State<HomePage> {
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
                   Colors.grey.shade900,
                   Colors.black,
@@ -327,7 +336,7 @@ class _HomePageState extends State<HomePage> {
               controller: pageController,
               count: activeGroups.length,
               effect: ExpandingDotsEffect(
-                dotColor: Colors.tealAccent.shade100,
+                dotColor: Colors.white,
                 activeDotColor: Colors.teal.shade900,
                 dotHeight: 10,
                 dotWidth: 14,
