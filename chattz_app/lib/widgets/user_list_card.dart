@@ -1,5 +1,6 @@
 import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/pages/profile_page.dart';
+import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -104,8 +105,8 @@ class _UserListCardState extends State<UserListCard>
                       onTap: () {
                         if (!isMe) {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ProfilePage(
+                            FadePageRoute(
+                              page: ProfilePage(
                                 userData: widget.member,
                               ),
                             ),

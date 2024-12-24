@@ -8,16 +8,16 @@ class SkillSlider extends StatefulWidget {
   final bool showSlider;
 
   const SkillSlider({
-    Key? key,
+    super.key,
     required this.screenWidth,
     required this.skill,
     required this.level,
     required this.onChanged,
     required this.showSlider,
-  }) : super(key: key);
+  });
 
   @override
-  _SkillSliderState createState() => _SkillSliderState();
+  State<SkillSlider> createState() => _SkillSliderState();
 }
 
 class _SkillSliderState extends State<SkillSlider>

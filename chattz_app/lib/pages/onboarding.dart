@@ -1,220 +1,229 @@
-import 'package:chattz_app/pages/login_page.dart';
-import 'package:chattz_app/pages/register_page.dart';
+import 'package:chattz_app/pages/flutter_login_page.dart';
+import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class OnboardingPage extends StatelessWidget {
+class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
 
   @override
+  State<OnboardingPage> createState() => _OnboardingPageState();
+}
+
+class _OnboardingPageState extends State<OnboardingPage> {
+  bool isLastPage = false;
+  late PageController _pageController;
+  final Map<int, Map<String, String>> pageData = {
+    1: {
+      "animation": 'assets/animations/jam_animation.json',
+      "title": 'Discover Music Jams',
+      "subtitle":
+          'Find amazing jams near you, join other musicians, and make beautiful music.',
+    },
+    2: {
+      "animation": 'assets/animations/chatting_animation.json',
+      "title": 'Collaborate & Connect',
+      "subtitle":
+          'Chat with fellow jammers, share ideas, and create music together.',
+    },
+    3: {
+      "animation": 'assets/animations/join_now.json',
+      "title": 'Get Started Today!',
+      "subtitle":
+          'Join a community of musicians and start your jamming journey.',
+    },
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
+        height: size.height,
+        width: size.width,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF2D1F3D),
-              Colors.teal.shade900,
+              Colors.teal[700]!,
+              Colors.teal[900]!,
               Colors.black,
-              // const Color(0xFF1D1128),
             ],
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // logo and name
-                const Row(
+          child: Stack(
+            children: [
+              PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    isLastPage = index == pageData.length - 1;
+                  });
+                },
+                children: [
+                  for (int i = 1; i <= pageData.length; i++)
+                    AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, child) {
+                        double value = 1.0;
+                        if (_pageController.position.haveDimensions) {
+                          value = _pageController.page! - (i - 1);
+                          value = (1 - (value.abs() * 0.3)).clamp(0.7, 1.0);
+                        }
+                        return Transform.scale(
+                          scale: value,
+                          child: _buildPage(size, i),
+                        );
+                      },
+                    ),
+                ],
+              ),
+              Container(
+                alignment: const Alignment(0, 0.9),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Image.asset(
-                    //   'assets/chatbox_logo.png',
-                    //   width: 24,
-                    //   height: 24,
-                    //   color: Colors.white,
-                    // ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Chatbox',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // some description
-                const SizedBox(height: 48),
-                const Text(
-                  'Connect\nfriends\neasily &\nquickly',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 48,
-                    fontWeight: FontWeight.w600,
-                    height: 1.1,
-                  ),
-                ),
-
-                // some more description
-                const SizedBox(height: 16),
-                Text(
-                  'Our chat app is the perfect way to stay\nconnected with friends and family.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 16,
-                    height: 1.5,
-                  ),
-                ),
-
-                // the social buttons for login
-                const SizedBox(height: 48),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _SocialButton(
-                      icon: 'assets/images/facebook_logo.png',
-                      onPressed: () {},
-                    ),
-                    const SizedBox(width: 16),
-                    _SocialButton(
-                      icon: 'assets/images/google_logo.png',
-                      onPressed: () {},
-                    ),
-                    const SizedBox(width: 16),
-                    _SocialButton(
-                      icon: 'assets/images/apple_logo.png',
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-
-                // OR divider
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        color: Colors.white.withOpacity(0.2),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 14,
+                    GestureDetector(
+                      onTap: () {
+                        _pageController.animateToPage(pageData.length - 1,
+                            duration: const Duration(milliseconds: 700),
+                            curve: Curves.easeOut);
+                      },
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                        padding: EdgeInsets.symmetric(
+                            vertical: size.height * 0.01,
+                            horizontal: size.width * 0.03),
+                        child: Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: Colors.tealAccent,
+                            fontSize: size.width * 0.045,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: Divider(
-                        color: Colors.white.withOpacity(0.2),
+                    SmoothPageIndicator(
+                      controller: _pageController,
+                      count: pageData.length,
+                      effect: ExpandingDotsEffect(
+                        activeDotColor: Colors.tealAccent,
+                        dotHeight: size.height * 0.012,
+                        dotWidth: size.height * 0.012,
                       ),
                     ),
-                  ],
-                ),
-
-                // sign up with mail button
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const RegisterPage()));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Sign up with mail',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Existing Account - link to login page
-                const Spacer(),
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginPage()));
-                    },
-                    child: const Text.rich(
-                      TextSpan(
-                        text: 'Existing account? ',
-                        style: TextStyle(
-                          color: Colors.white70,
+                    GestureDetector(
+                      onTap: () {
+                        if (_pageController.page! < pageData.length - 1) {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 700),
+                            curve: Curves.easeOutBack,
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            FadePageRoute(
+                              page: const FlutterLoginPage(),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        margin:
+                            EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                        padding: EdgeInsets.symmetric(
+                          vertical: size.height * 0.01,
+                          horizontal: size.width * 0.03,
                         ),
-                        children: [
-                          TextSpan(
-                            text: 'Log in',
+                        decoration: BoxDecoration(
+                          color: Colors.tealAccent,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 400),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                          child: Text(
+                            isLastPage ? 'Join' : 'Next',
+                            key: ValueKey<bool>(isLastPage),
                             style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                              fontSize: size.width * 0.045,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
-class _SocialButton extends StatelessWidget {
-  final String icon;
-  final VoidCallback onPressed;
-
-  const _SocialButton({
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Image.asset(
-        icon,
-        width: 56,
-        height: 56,
-      ),
-      style: IconButton.styleFrom(
-        padding: const EdgeInsets.all(1),
-        shape: CircleBorder(
-          side: BorderSide(
-            color: Colors.white.withOpacity(0.2),
+  Widget _buildPage(Size size, int pageNumber) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Lottie.asset(
+          pageData[pageNumber]!['animation']!,
+          // height: size.height * 0.4,
+        ),
+        SizedBox(height: size.height * 0.03),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            text: pageData[pageNumber]!['title']!.split(' ')[0],
+            style: TextStyle(
+              color: Colors.tealAccent,
+              fontSize: size.width * 0.08,
+              fontWeight: FontWeight.bold,
+            ),
+            children: [
+              TextSpan(
+                text: pageData[pageNumber]!['title']!
+                    .substring(pageData[pageNumber]!['title']!.indexOf(' ')),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
           ),
         ),
-      ),
+        SizedBox(height: size.height * 0.02),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+          child: Text(
+            pageData[pageNumber]!['subtitle']!,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: size.width * 0.045,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
     );
   }
 }

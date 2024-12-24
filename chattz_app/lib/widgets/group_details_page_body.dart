@@ -4,6 +4,7 @@ import 'package:chattz_app/main.dart';
 import 'package:chattz_app/models/message.dart';
 import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/pages/home_page.dart';
+import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:chattz_app/widgets/user_list_card.dart';
@@ -37,8 +38,8 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
 
   void setDetails() async {
     try {
-      await setGroupDetails();
-      await setMemberDetails();
+      if (groupDetails.isEmpty) await setGroupDetails();
+      if (members.isEmpty) await setMemberDetails();
     } catch (e) {
       // handle gracefully
     }
@@ -224,8 +225,8 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
   void pushReplacementChatPage() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => ChatPage(
+      FadePageRoute(
+        page: ChatPage(
           groupDetails: groupDetails,
         ),
       ),
@@ -235,8 +236,8 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
   void pushReplacementHomePage() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HomePage(),
+      FadePageRoute(
+        page: const HomePage(),
       ),
     );
   }

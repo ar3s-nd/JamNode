@@ -53,6 +53,7 @@ dependencies:
   hidden_drawer_menu: ^3.0.1
   shimmer: ^3.0.0
   flutter_staggered_animations: ^1.1.1
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:

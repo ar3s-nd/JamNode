@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:chattz_app/components/main_drawer.dart';
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/chat_page.dart';
+import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:chattz_app/widgets/group_details_page_body.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:lottie/lottie.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,8 +50,8 @@ class _HomePageState extends State<HomePage>
       await Future.delayed(
           const Duration(seconds: 1)); // Simulating loading time
       FirestoreServices().listenToGroupChanges(setGroups);
-      await setGroups();
-      await setUser();
+      if (groups.isEmpty) await setGroups();
+      if (userDetails.isEmpty) await setUser();
     } catch (e) {
       // handle error
     }
@@ -149,8 +151,8 @@ class _HomePageState extends State<HomePage>
   void pushNavigator(Map<String, dynamic> newGroup) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => ChatPage(
+      FadePageRoute(
+        page: ChatPage(
           groupDetails: newGroup,
         ),
       ),
@@ -243,7 +245,7 @@ class _HomePageState extends State<HomePage>
             ),
           ),
           actions: [
-            if (isActiveGroupShown)
+            if (isActiveGroupShown && activeGroups.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(right: 10.0),
                 child: GestureDetector(
@@ -369,6 +371,7 @@ class _HomePageState extends State<HomePage>
     return activeGroups.isNotEmpty
         ? isBuiltAsCard
             ? CarouselSlider(
+                key: ValueKey(groups['groupId']),
                 unlimitedMode: true,
                 slideTransform: const ForegroundToBackgroundTransform(),
                 slideIndicator: CircularWaveSlideIndicator(
@@ -418,12 +421,16 @@ class _HomePageState extends State<HomePage>
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.groups_2_rounded,
-                  size: MediaQuery.of(context).size.width *
-                      0.3, // Dynamic icon size
-                  color: Colors.tealAccent.shade700,
-                ),
+                // child: Icon(
+                //   Icons.groups_2_rounded,
+                //   size: MediaQuery.of(context).size.width *
+                //       0.3, // Dynamic icon size
+                //   color: Colors.tealAccent.shade700,
+                // ),
+                child: Lottie.asset('assets/animations/no_jams_yet.json',
+                    backgroundLoading: false,
+                    width: MediaQuery.of(context).size.width * 0.65,
+                    repeat: false),
               ),
             ),
 

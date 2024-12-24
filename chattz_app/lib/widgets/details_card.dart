@@ -5,14 +5,14 @@ import 'package:chattz_app/main.dart';
 
 class DetailsCard extends StatefulWidget {
   const DetailsCard({
-    Key? key,
+    super.key,
     required this.update,
     required this.icon,
     required this.label,
     required this.value,
     this.isUpdatable = false,
     required this.isMe,
-  }) : super(key: key);
+  });
 
   final Function update;
   final IconData icon;

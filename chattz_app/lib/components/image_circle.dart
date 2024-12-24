@@ -9,16 +9,16 @@ class ImageCircle extends StatefulWidget {
   final Color letterColor;
 
   const ImageCircle({
-    Key? key,
+    super.key,
     required this.letter,
     required this.circleRadius,
     required this.fontSize,
     required this.colors,
     this.letterColor = Colors.white,
-  }) : super(key: key);
+  });
 
   @override
-  _ImageCircleState createState() => _ImageCircleState();
+  State<ImageCircle> createState() => _ImageCircleState();
 }
 
 class _ImageCircleState extends State<ImageCircle>

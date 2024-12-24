@@ -1,5 +1,6 @@
 import 'package:chattz_app/models/message.dart';
 import 'package:chattz_app/pages/group_details_page.dart';
+import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:chattz_app/widgets/message_bubble.dart';
@@ -183,8 +184,8 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
           title: GestureDetector(
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => GroupDetailsPage(
+                FadePageRoute(
+                  page: GroupDetailsPage(
                     groupDetails: groupDetails,
                   ),
                 ),

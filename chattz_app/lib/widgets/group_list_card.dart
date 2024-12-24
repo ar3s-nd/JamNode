@@ -3,12 +3,13 @@ import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/pages/group_details_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class GroupListCard extends StatefulWidget {
   final Map<String, dynamic> group;
-  const GroupListCard({Key? key, required this.group}) : super(key: key);
+  const GroupListCard({super.key, required this.group});
 
   @override
   State<GroupListCard> createState() => _GroupListCardState();
@@ -22,7 +23,7 @@ class _GroupListCardState extends State<GroupListCard>
   late Animation<double> _rotateAnimation;
   late Animation<double> _slideAnimation;
 
-  bool _isHovered = false;
+  bool _isHovered = true;
 
   @override
   void initState() {
@@ -58,36 +59,23 @@ class _GroupListCardState extends State<GroupListCard>
   void _onTapDown(TapDownDetails details) {
     _controller.forward();
     if (mounted) {
-      setState(() => _isHovered = true);
+      setState(() => _isHovered = false);
     }
   }
 
   void _onTapUp(TapUpDetails details) {
     _controller.reverse();
     if (mounted) {
-      setState(() => _isHovered = false);
+      setState(() => _isHovered = true);
     }
     bool isMember = widget.group['members']
         .contains(FirebaseAuth.instance.currentUser!.uid);
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => isMember
+      CupertinoPageRoute(
+        builder: (context) => isMember
             ? ChatPage(groupDetails: widget.group)
             : GroupDetailsPage(groupDetails: widget.group),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.1, 0.0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -95,7 +83,7 @@ class _GroupListCardState extends State<GroupListCard>
   void _onTapCancel() {
     _controller.reverse();
     if (mounted) {
-      setState(() => _isHovered = false);
+      setState(() => _isHovered = true);
     }
   }
 

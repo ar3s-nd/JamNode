@@ -1,9 +1,9 @@
 import 'package:chattz_app/pages/onboarding.dart';
 import 'package:chattz_app/pages/profile_page.dart';
+import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/widgets/error_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MainDrawer extends StatefulWidget {
   final bool isActiveGroupShown;
@@ -111,15 +111,8 @@ class _MainDrawerState extends State<MainDrawer>
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    ProfilePage(userData: widget.userData),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              return FadeTransition(
-                                  opacity: animation, child: child);
-                            },
+                          FadePageRoute(
+                            page: ProfilePage(userData: widget.userData),
                           ),
                         );
                       },
@@ -161,8 +154,8 @@ class _MainDrawerState extends State<MainDrawer>
                             }
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const OnboardingPage(),
+                              FadePageRoute(
+                                page: const OnboardingPage(),
                               ),
                             );
                           },
