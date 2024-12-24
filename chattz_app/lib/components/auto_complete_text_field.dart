@@ -80,7 +80,7 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
           ),
           validator: widget.validator,
           onChanged: (value) {
-            if (mounted)
+            if (mounted) {
               setState(() {
                 if (value.isEmpty) {
                   filteredSuggestions = [];
@@ -95,6 +95,7 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
                       : null;
                 }
               });
+            }
           },
         ),
         if (filteredSuggestions.isNotEmpty)
@@ -112,10 +113,11 @@ class _AutoCompleteTextFieldState extends State<AutoCompleteTextField> {
                 return GestureDetector(
                   onTap: () {
                     widget.controller.text = filteredSuggestions[index];
-                    if (mounted)
+                    if (mounted) {
                       setState(() {
                         filteredSuggestions = [];
                       });
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(

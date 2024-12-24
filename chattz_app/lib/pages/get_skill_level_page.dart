@@ -3,6 +3,7 @@ import 'package:chattz_app/pages/auth_page.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class GetSkillLevelPage extends StatefulWidget {
   final List<String> skills;
@@ -113,12 +114,17 @@ class _GetSkillLevelPage extends State<GetSkillLevelPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return RefreshIndicator.adaptive(
+    return LiquidPullToRefresh(
+      animSpeedFactor: 2,
       onRefresh: () async {
-        if (mounted) setState(() {});
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (mounted) {
+          setState(() {});
+        }
       },
-      color: Colors.tealAccent,
+      color: Colors.teal.shade900,
       backgroundColor: Colors.black,
+      showChildOpacityTransition: false,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
@@ -148,6 +154,7 @@ class _GetSkillLevelPage extends State<GetSkillLevelPage> {
           ),
           child: SafeArea(
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.symmetric(
                 vertical: screenHeight * 0.03,
                 horizontal: screenWidth * 0.05,

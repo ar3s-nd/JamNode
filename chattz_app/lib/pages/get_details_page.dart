@@ -6,6 +6,7 @@ import 'package:chattz_app/pages/get_skill_level_page.dart';
 import 'package:chattz_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class GetDetailsPage extends StatefulWidget {
   final String name, email, collegeName, rollNumber;
@@ -52,8 +53,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
   }
 
   void push() {
-    Navigator.push(
-      context,
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => GetSkillLevelPage(skills: _selectedSkills),
       ),
@@ -88,16 +88,26 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: Colors.white),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              pusReplacementAuthPage();
+              try {
+                await FirebaseAuth.instance.signOut();
+                pusReplacementAuthPage();
+              } catch (e) {
+                // handle error
+              }
             },
           ),
         ],
       ),
-      body: RefreshIndicator.adaptive(
-        color: Colors.tealAccent,
+      body: LiquidPullToRefresh(
+        animSpeedFactor: 2,
+        color: Colors.teal.shade900,
         backgroundColor: Colors.black,
         onRefresh: () async {
+          try {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          } catch (e) {
+            // handle error
+          }
           if (mounted) {
             setState(() {});
           }
@@ -118,6 +128,7 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
           ),
           child: SafeArea(
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(24),
               child: Form(
                 key: _formKey,
@@ -247,41 +258,47 @@ class _GetDetailsPageState extends State<GetDetailsPage> {
                           return ElevatedButton(
                             onPressed: isFormValid
                                 ? () async {
-                                    if (_formKey.currentState?.validate() ??
-                                        false) {
-                                      // create a map of the user details
-                                      Map<String, dynamic> skills = {};
-                                      for (var skill in _selectedSkills) {
-                                        if (skill != 'None of them') {
-                                          skills[skill] = 1;
+                                    try {
+                                      if (_formKey.currentState?.validate() ??
+                                          false) {
+                                        // create a map of the user details
+                                        Map<String, dynamic> skills = {};
+                                        for (var skill in _selectedSkills) {
+                                          if (skill != 'None of them') {
+                                            skills[skill] = 1;
+                                          }
+                                        }
+                                        Map<String, dynamic> userInfoMap = {
+                                          'name': _nameController.text,
+                                          'email': _emailController.text,
+                                          "collegeName":
+                                              _collegeNameController.text,
+                                          "collegeId":
+                                              _rollNumberController.text,
+                                          "gotDetails": false,
+                                          "groups": [],
+                                          'skills': skills,
+                                        };
+
+                                        if (_selectedSkills
+                                            .contains('None of them')) {
+                                          userInfoMap['gotDetails'] = true;
+                                        }
+
+                                        // try adding the user to the database
+                                        await UserService().updateProfile(
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid,
+                                          userInfoMap,
+                                        );
+                                        if (userInfoMap['gotDetails']) {
+                                          pusReplacementAuthPage();
+                                        } else {
+                                          push();
                                         }
                                       }
-                                      Map<String, dynamic> userInfoMap = {
-                                        'name': _nameController.text,
-                                        'email': _emailController.text,
-                                        "collegeName":
-                                            _collegeNameController.text,
-                                        "collegeId": _rollNumberController.text,
-                                        "gotDetails": false,
-                                        "groups": [],
-                                        'skills': skills,
-                                      };
-
-                                      if (_selectedSkills
-                                          .contains('None of them')) {
-                                        userInfoMap['gotDetails'] = true;
-                                      }
-
-                                      // try adding the user to the database
-                                      await UserService().updateProfile(
-                                        FirebaseAuth.instance.currentUser!.uid,
-                                        userInfoMap,
-                                      );
-                                      if (userInfoMap['gotDetails']) {
-                                        pusReplacementAuthPage();
-                                      } else {
-                                        push();
-                                      }
+                                    } catch (e) {
+                                      // handle error
                                     }
                                   }
                                 : null,

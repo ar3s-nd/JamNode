@@ -1,9 +1,8 @@
-import 'package:chattz_app/pages/get_details_page.dart';
 import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/pages/onboarding.dart';
-import 'package:chattz_app/services/user_services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -13,54 +12,44 @@ class AuthPage extends StatefulWidget {
 }
 
 class AuthPageState extends State<AuthPage> {
-  bool gotDetails = false;
-
-  Future<Map<String, dynamic>?> checkForDetails(String id) async {
-    return await UserService().getUserDetailsById(id);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // Automatically navigates when user logs in or logs out
           if (snapshot.connectionState == ConnectionState.active) {
             if (snapshot.hasData) {
-              // If user is logged in, check for details
-              return FutureBuilder<Map<String, dynamic>?>(
-                future: checkForDetails(FirebaseAuth.instance.currentUser!.uid),
-                builder: (context, userDetailsSnapshot) {
-                  if (userDetailsSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (userDetailsSnapshot.hasData &&
-                      userDetailsSnapshot.data?["gotDetails"]) {
-                    // If user details are found, go to home page
-                    return const HomePage();
-                  } else {
-                    // If user details are not found, go to get details page
-                    return GetDetailsPage(
-                      name: userDetailsSnapshot.data?['name'] ?? '',
-                      email: userDetailsSnapshot.data?['email'] ?? '',
-                      collegeName:
-                          userDetailsSnapshot.data?['collegeName'] ?? '',
-                      rollNumber: userDetailsSnapshot.data?['collegeId'] ?? '',
-                      skills: List<String>.from(
-                          userDetailsSnapshot.data?['skills'].keys),
-                    );
-                  }
-                },
-              );
+              // If the user is logged in, navigate to the home page
+              return const HomePage();
             } else {
-              // If user is not logged in, go to onboarding page
-              return const OnboardingPage();
+              // If no user is logged in, navigate to the login page
+              return const OnboardingPage(); // Or FlutterLoginPage
             }
           }
 
           // Show loading screen while Firebase is checking the auth state
-          return const Center(child: CircularProgressIndicator());
+          return Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.teal.shade900,
+                  Colors.black,
+                ],
+              ),
+            ),
+            child: Center(
+              child: Lottie.asset(
+                'assets/animations/loading_animation.json',
+                height: 150,
+                width: 150,
+              ),
+            ),
+          );
         },
       ),
     );

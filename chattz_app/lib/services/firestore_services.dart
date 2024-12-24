@@ -235,7 +235,7 @@ class FirestoreServices {
       'members': [],
       "chats": {},
       'admins': [],
-      "groupId": "",
+      "groupId": "sdsjdj",
       "createdOn": DateTime.now().toIso8601String().split('T').first,
     };
     return defaultGroupDetails;

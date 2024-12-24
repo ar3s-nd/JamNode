@@ -16,18 +16,22 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  Map<String, dynamic> basic =
-      await FirestoreServices().getAppDataAndSettings();
+  try {
+    Map<String, dynamic> basic =
+        await FirestoreServices().getAppDataAndSettings();
 
-  groupNamesGlobal = List<String>.from(basic['groupNames'] ?? ['JamBuds']);
-  skillsGlobal = List<String>.from(basic['skills'] ?? ['Guitar']);
-  collegeNamesGlobal =
-      List<String>.from(basic['collegeNames'] ?? ['IIT Bombay']);
-  skillsGlobal.sort();
-  numberOfGroupsPerPersonGlobal = basic['numberOfGroupsPerPerson'] as int;
-  timeOutForGroupsGlobal = basic['timeoutForGroups'] as int;
+    groupNamesGlobal = List<String>.from(basic['groupNames'] ?? ['JamBuds']);
+    skillsGlobal = List<String>.from(basic['skills'] ?? ['Guitar']);
+    collegeNamesGlobal =
+        List<String>.from(basic['collegeNames'] ?? ['IIT Bombay']);
+    skillsGlobal.sort();
+    numberOfGroupsPerPersonGlobal = basic['numberOfGroupsPerPerson'] as int;
+    timeOutForGroupsGlobal = basic['timeoutForGroups'] as int;
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  } catch (e) {
+    // handle the error
+  }
 }
 
 class MyApp extends StatelessWidget {

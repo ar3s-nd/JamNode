@@ -8,14 +8,20 @@ class UserService {
 
   // add the user info to firestore
   Future addUserDetails(Map<String, dynamic> userInfoMap, String id) async {
-    return await userCollection.doc(id).set(userInfoMap);
+    try {
+      return await userCollection.doc(id).set(userInfoMap);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   // update user info in firestore
   Future updateProfile(String id, Map<String, dynamic> userInfoMap) async {
-    debugPrint('at updateProfile ${userInfoMap['name']}');
-    debugPrint('${userInfoMap['groups']}');
-    return await userCollection.doc(id).update(userInfoMap);
+    try {
+      return await userCollection.doc(id).update(userInfoMap);
+    } catch (e) {
+      // handle gracefully
+    }
   }
 
   Map<String, dynamic> parse(Map<String, dynamic>? data) {

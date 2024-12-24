@@ -1,15 +1,6 @@
-import 'package:chattz_app/components/details_textfield.dart';
-import 'package:chattz_app/components/image_circle.dart';
-import 'package:chattz_app/main.dart';
-import 'package:chattz_app/models/message.dart';
-import 'package:chattz_app/pages/chat_page.dart';
-import 'package:chattz_app/pages/home_page.dart';
-import 'package:chattz_app/services/firestore_services.dart';
-import 'package:chattz_app/services/user_services.dart';
 import 'package:chattz_app/widgets/group_details_page_body.dart';
-import 'package:chattz_app/widgets/user_list_card.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   final Map<String, dynamic> groupDetails;
@@ -29,13 +20,20 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
   // Updated build method for enhanced UI
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator.adaptive(
+    return LiquidPullToRefresh(
+      animSpeedFactor: 2,
+      showChildOpacityTransition: false,
       onRefresh: () async {
+        try {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        } catch (e) {
+          // handle error
+        }
         if (mounted) {
           setState(() {});
         }
       },
-      color: Colors.tealAccent,
+      color: Colors.teal.shade900,
       backgroundColor: Colors.black,
       child: Scaffold(
         extendBodyBehindAppBar: true,
@@ -87,6 +85,7 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
           ),
           child: SafeArea(
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               physics: const AlwaysScrollableScrollPhysics(),
               child: GroupDetailsPageBody(
                 groupDetails: widget.groupDetails,

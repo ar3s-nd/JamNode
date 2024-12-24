@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:chattz_app/components/image_circle.dart';
 import 'package:chattz_app/models/message.dart';
 import 'package:chattz_app/pages/group_details_page.dart';
 import 'package:chattz_app/services/firestore_services.dart';
@@ -10,19 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-String generateRandomString(int length) {
-  const characters =
-      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  Random random = Random();
-
-  return List.generate(length, (index) {
-    int randomIndex = random.nextInt(characters.length);
-    return characters[randomIndex];
-  }).join();
-}
-
-Map<String, Map<String, dynamic>> userDetails = {};
-
 class ChatPage extends StatefulWidget {
   final Map<String, dynamic> groupDetails;
   const ChatPage({super.key, required this.groupDetails});
@@ -31,31 +15,16 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final String userId = FirebaseAuth.instance.currentUser!.uid;
   Map<String, List<Message>> _messages = {};
   Map<String, dynamic> groupDetails = {};
   bool _showScrollButton = true;
-
-  void checkDatabasePeriodically() {
-    Timer.periodic(const Duration(seconds: 4), (timer) async {
-      try {
-        List<String> uids = userDetails.keys.toList();
-        uids.shuffle();
-        String uid = uids[0];
-        Message message = Message(
-            id: DateTime.now().toString(),
-            text: generateRandomString(10),
-            senderUserId: uid,
-            timestamp: DateTime(2023));
-        await FirestoreServices().addMessage(groupDetails['groupId'], message);
-      } catch (e) {
-        // print("Error checking database: $e");
-      }
-    });
-  }
+  Map<String, Map<String, dynamic>> userDetails = {};
+  late AnimationController _fabAnimationController;
+  late Animation<double> _fabScaleAnimation;
 
   void listenToChatChanges() {
     FirestoreServices().listenToChatChanges(
@@ -64,7 +33,11 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void setMessages() async {
-    _messages = await FirestoreServices().getChats(groupDetails['groupId']);
+    try {
+      _messages = await FirestoreServices().getChats(groupDetails['groupId']);
+    } catch (e) {
+      // handle error
+    }
     if (mounted) {
       setState(() {});
     }
@@ -76,42 +49,51 @@ class _ChatPageState extends State<ChatPage> {
         groupDetails = widget.groupDetails;
       });
     }
-
-    groupDetails = await FirestoreServices()
-        .getGroupDetailsByGroupId(groupDetails['groupId']);
+    try {
+      groupDetails = await FirestoreServices()
+          .getGroupDetailsByGroupId(groupDetails['groupId']);
+    } catch (e) {
+      // handle error
+    }
     if (mounted) {
       setState(() {});
     }
   }
 
   void setUserDetails() async {
-    userDetails =
-        await UserService().getUserDetailsByGroupId(groupDetails['groupId']);
+    try {
+      userDetails =
+          await UserService().getUserDetailsByGroupId(groupDetails['groupId']);
+    } catch (e) {
+      // handle error
+    }
     if (mounted) {
       setState(() {});
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    // checkDatabasePeriodically();
-    // AutoMessageService().sendMessageToDataBasePeriodically();
-    _scrollController.addListener(() {
-      if (_scrollController.hasClients) {
-        // Show button only if not at the bottom
-        final shouldShowButton = _scrollController.offset <
-            _scrollController.position.maxScrollExtent - 100;
+  void _scrollListener() {
+    if (_scrollController.hasClients) {
+      final shouldShowButton = _scrollController.offset <
+          _scrollController.position.maxScrollExtent - 100;
 
-        if (shouldShowButton != _showScrollButton) {
-          if (mounted) {
-            setState(() {
-              _showScrollButton = shouldShowButton;
-            });
-          }
+      if (shouldShowButton != _showScrollButton) {
+        if (mounted) {
+          setState(() {
+            _showScrollButton = shouldShowButton;
+          });
+        }
+        if (_showScrollButton) {
+          _fabAnimationController.forward();
+        } else {
+          _fabAnimationController.reverse();
         }
       }
-    });
+    }
+  }
+
+  void initialiseChat() {
+    _scrollController.addListener(_scrollListener);
     setGroupDetails();
     setUserDetails();
     setMessages();
@@ -119,110 +101,38 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    initialiseChat();
+    _fabAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _fabScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
   void dispose() {
     _scrollController.removeListener(() {});
     _scrollController.dispose();
+    _fabAnimationController.dispose();
     super.dispose();
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    if (groupDetails.isEmpty) {
-      setGroupDetails();
-    }
-    if (userDetails.isEmpty) {
-      setUserDetails();
-    }
-    if (_messages.isEmpty) {
-      setMessages();
-    }
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade900,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => GroupDetailsPage(
-                  groupDetails: groupDetails,
-                ),
-              ),
-            );
-          },
-          child: Row(
-            children: [
-              ImageCircle(
-                letter: groupDetails['name'][0].toUpperCase(),
-                circleRadius: MediaQuery.of(context).size.width *
-                    0.045, // Dynamic circle size
-                fontSize: MediaQuery.of(context).size.width *
-                    0.05, // Dynamic font size
-                colors: [Colors.tealAccent.shade200, Colors.teal],
-              ),
-              SizedBox(
-                  width: MediaQuery.of(context).size.width *
-                      0.02), // Dynamic spacing
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      groupDetails["name"],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: MediaQuery.of(context).size.width *
-                            0.04, // Dynamic font size
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      groupDetails['members'].length == 1
-                          ? "1 member"
-                          : groupDetails['members'].length > 999
-                              ? '999+ members'
-                              : "${groupDetails['members'].length} members",
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: MediaQuery.of(context).size.width *
-                            0.03, // Dynamic font size
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      appBar: _buildAnimatedAppBar(),
       body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              // Colors.yellow.shade900,
-              // Colors.blue.shade200,
-              // Colors.teal.shade900,
-              Colors.teal.shade900,
-              Colors.transparent,
-            ],
+            colors: [Colors.teal.shade900, Colors.black],
           ),
         ),
         child: Stack(
@@ -231,198 +141,332 @@ class _ChatPageState extends State<ChatPage> {
               children: [
                 Expanded(
                   child: _messages.keys.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 5),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[900],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  groupDetails.containsKey('createdOn')
-                                      ? 'Started on ${groupDetails['createdOn']}'
-                                      : 'Started on 2024-12-25',
-                                  style: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No messages yet',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _messages.keys.length,
-                          itemBuilder: (context, index) {
-                            final date = _messages.keys.elementAt(index);
-
-                            final messages = _messages[date]!;
-                            // Sort the messages by timestamp
-                            messages.sort(
-                              (a, b) => a.timestamp.compareTo(b.timestamp),
-                            );
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (index == 0)
-                                  Center(
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 5),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[900],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        groupDetails.containsKey('createdOn')
-                                            ? 'Started on ${groupDetails['createdOn']}'
-                                            : 'Started on 2024-12-25',
-                                        style: TextStyle(
-                                          color: Colors.grey[400],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                // Displaying date above the messages
-                                Center(
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[900],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      DateFormat("MMMM d, yyyy")
-                                          .format(DateTime.parse(date)),
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Displaying the list of messages for the current date
-                                ...messages.map(
-                                  (message) => MessageBubble(
-                                      userDetails: userDetails,
-                                      message: message),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                      ? _buildEmptyState()
+                      : _buildMessageList(),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade900,
-                    borderRadius: BorderRadius.circular(25),
+                _buildInputTextField(),
+              ],
+            ),
+            if (_showScrollButton) _buildScrollToBottomButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAnimatedAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(kToolbarHeight),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 300),
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0.0, -kToolbarHeight * (1 - value)),
+            child: Opacity(
+              opacity: value,
+              child: child,
+            ),
+          );
+        },
+        child: AppBar(
+          backgroundColor: Colors.grey.shade900,
+          elevation: 1,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          title: GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => GroupDetailsPage(
+                    groupDetails: groupDetails,
                   ),
-                  constraints: BoxConstraints(
-                    minHeight: MediaQuery.of(context).size.height * 0.01,
-                    // maxHeight: 150,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.045),
-                      // TextField for input
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          style: const TextStyle(color: Colors.white),
-                          maxLines: null, // Allows multiline input
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            hintText: 'Write your message...',
-                            hintStyle: TextStyle(
-                              color: Colors.grey[500],
-                              fontWeight: FontWeight.w300,
-                            ),
-                            border: InputBorder.none,
-                          ),
+                ),
+              );
+            },
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'group-${groupDetails['groupId']}',
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.teal.shade400, Colors.teal.shade700],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.teal.shade700.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        groupDetails['name'][0].toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      // Send Button
-                      IconButton(
-                        icon:
-                            const Icon(Icons.send_rounded, color: Colors.white),
-                        onPressed: () {
-                          if (_messageController.text.isNotEmpty) {
-                            if (mounted) {
-                              setState(() {
-                                Message message = Message(
-                                  id: DateTime.now().toString(),
-                                  text: _messageController.text,
-                                  senderUserId: userId,
-                                  timestamp: DateTime.now(),
-                                );
-                                String date = message.timestamp.toString();
-                                if (_messages.containsKey(date)) {
-                                  _messages[date]!.add(message);
-                                } else {
-                                  _messages[date] = [message];
-                                }
-                                FirestoreServices().addMessage(
-                                  groupDetails['groupId'],
-                                  message,
-                                );
-                                _messageController.clear();
-                              });
-                            }
-                            _scrollToBottom();
-                          }
-                        },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        groupDetails["name"],
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        groupDetails['members'].length == 1
+                            ? "1 member"
+                            : "${groupDetails['members'].length} members",
+                        style: TextStyle(
+                          color: Colors.teal.shade200,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            if (_showScrollButton)
-              Positioned(
-                bottom: MediaQuery.of(context).size.height *
-                    0.1, // 10% of the screen height
-                right: MediaQuery.of(context).size.width *
-                    0.02, // 2% of the screen width
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white70),
+              onPressed: () {
+                // Group options menu
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScrollToBottomButton() {
+    return Positioned(
+      right: 16,
+      bottom: 80,
+      child: ScaleTransition(
+        scale: _fabScaleAnimation,
+        child: FloatingActionButton(
+          mini: true,
+          backgroundColor: Colors.teal.shade700,
+          onPressed: _scrollToBottom,
+          child: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade900,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.teal.withOpacity(0.2)),
+            ),
+            child: Text(
+              groupDetails.containsKey('createdOn')
+                  ? 'Started on ${groupDetails['createdOn']}'
+                  : 'New Group Created',
+              style: TextStyle(
+                color: Colors.teal.shade200,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Start the conversation',
+            style: TextStyle(
+              color: Colors.grey.shade400,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Be the first one to send a message!',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageList() {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: _messages.keys.length,
+      itemBuilder: (context, index) {
+        final date = _messages.keys.elementAt(index);
+        final messages = _messages[date]!
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+        return Column(
+          children: [
+            if (index == 0) _buildGroupCreationBanner(),
+            _buildDateHeader(date),
+            // ...messages.map((message) => _buildMessageBubble(message)),
+            ...messages.map((message) => MessageBubble(
+                message: message,
+                userDetails: userDetails[message.senderUserId] ?? {})),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGroupCreationBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        groupDetails.containsKey('createdOn')
+            ? '✨ Started on ${groupDetails['createdOn']}'
+            : '✨ Welcome to the Jam!',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.grey[400],
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateHeader(String date) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          DateFormat("MMMM d, yyyy").format(DateTime.parse(date)),
+          style: TextStyle(
+            color: Colors.grey.shade400,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputTextField() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade900,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // IconButton(
+          //   icon: Icon(Icons.add_circle_outline, color: Colors.teal.shade200),
+          //   onPressed: () {
+          //     // Add attachment functionality
+          //   },
+          // ),
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Type a message...',
+                hintStyle: TextStyle(
+                    color: Colors.grey.shade500, fontWeight: FontWeight.w300),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _messageController,
+            builder: (context, value, child) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: value.text.isEmpty
+                      ? Colors.transparent
+                      : Colors.teal.shade700,
+                  borderRadius: BorderRadius.circular(25),
+                ),
                 child: IconButton(
-                  color: Colors.white,
-                  icon: const Icon(Icons.arrow_downward_rounded),
+                  icon: Icon(
+                    Icons.send_rounded,
+                    color: value.text.isEmpty
+                        ? Colors.grey.shade600
+                        : Colors.white,
+                  ),
                   onPressed: () {
-                    if (mounted) {
-                      setState(() {
-                        _scrollToBottom();
-                      });
+                    if (_messageController.text.isNotEmpty) {
+                      final message = Message(
+                        id: DateTime.now().toString(),
+                        text: _messageController.text,
+                        senderUserId: userId,
+                        timestamp: DateTime.now(),
+                      );
+                      FirestoreServices()
+                          .addMessage(groupDetails['groupId'], message);
+                      _messageController.clear();
+                      _scrollToBottom();
                     }
                   },
                 ),
-              ),
-          ],
-        ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
