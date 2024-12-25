@@ -7,6 +7,7 @@ class ErrorDialog {
     required String title,
     String? description,
     VoidCallback? onRetry,
+    VoidCallback? onClose,
     String text1 = 'Retry',
     String text2 = 'Close',
   }) {
@@ -24,6 +25,7 @@ class ErrorDialog {
                     title: title,
                     description: description,
                     onRetry: onRetry,
+                    onClose: onClose,
                     text1: text1,
                     text2: text2,
                   ),
@@ -56,6 +58,7 @@ class AnimatedErrorDialog extends StatelessWidget {
   final String title;
   final String? description;
   final VoidCallback? onRetry;
+  final VoidCallback? onClose;
   final String text1;
   final String text2;
 
@@ -64,6 +67,7 @@ class AnimatedErrorDialog extends StatelessWidget {
     required this.title,
     this.description,
     this.onRetry,
+    this.onClose,
     required this.text1,
     required this.text2,
   });
@@ -141,7 +145,13 @@ class AnimatedErrorDialog extends StatelessWidget {
                     children: [
                       _buildButton(
                         text: text2,
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          debugPrint('Close button pressed');
+                          Navigator.pop(context);
+                          if (onClose != null) {
+                            onClose!();
+                          }
+                        },
                         isPrimary: false,
                       ),
                       if (onRetry != null)

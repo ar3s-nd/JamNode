@@ -139,30 +139,39 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           );
                         }
                       },
-                      child: Container(
-                        margin:
-                            EdgeInsets.symmetric(horizontal: size.width * 0.05),
-                        padding: EdgeInsets.symmetric(
-                          vertical: size.height * 0.01,
-                          horizontal: size.width * 0.03,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.tealAccent,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 400),
-                          transitionBuilder: (child, animation) {
-                            return FadeTransition(
-                              opacity: animation,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: ScaleTransition(
+                              scale: CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic),
                               child: child,
-                            );
-                          },
+                            ),
+                          );
+                        },
+                        child: Container(
+                          key: ValueKey<bool>(isLastPage),
+                          margin: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.05),
+                          padding: EdgeInsets.symmetric(
+                            vertical: size.height * 0.01,
+                            horizontal: size.width * 0.03,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isLastPage
+                                ? Colors.tealAccent
+                                : Colors.transparent,
+                            borderRadius:
+                                isLastPage ? BorderRadius.circular(15) : null,
+                          ),
                           child: Text(
                             isLastPage ? 'Join' : 'Next',
-                            key: ValueKey<bool>(isLastPage),
                             style: TextStyle(
-                              color: Colors.black,
+                              color:
+                                  isLastPage ? Colors.black : Colors.tealAccent,
                               fontSize: size.width * 0.045,
                               fontWeight: FontWeight.w500,
                             ),

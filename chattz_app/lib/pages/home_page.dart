@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:chattz_app/components/main_drawer.dart';
+import 'package:chattz_app/components/shimmer_loading.dart';
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
@@ -182,10 +183,9 @@ class _HomePageState extends State<HomePage>
     if (isLoading) {
       return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.teal.shade400),
-          ),
+        body: ShimmerLoading(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
         ),
       );
     }
@@ -421,16 +421,12 @@ class _HomePageState extends State<HomePage>
                     ),
                   ],
                 ),
-                // child: Icon(
-                //   Icons.groups_2_rounded,
-                //   size: MediaQuery.of(context).size.width *
-                //       0.3, // Dynamic icon size
-                //   color: Colors.tealAccent.shade700,
-                // ),
-                child: Lottie.asset('assets/animations/no_jams_yet.json',
-                    backgroundLoading: false,
-                    width: MediaQuery.of(context).size.width * 0.65,
-                    repeat: false),
+                child: Lottie.asset(
+                  'assets/animations/no_jams_yet.json',
+                  backgroundLoading: false,
+                  width: MediaQuery.of(context).size.width * 0.675,
+                  reverse: true,
+                ),
               ),
             ),
 
@@ -459,7 +455,7 @@ class _HomePageState extends State<HomePage>
                     ),
                   ),
                   TextSpan(
-                    text: 'Here!',
+                    text: 'Yet!',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: MediaQuery.of(context).size.width * 0.07,

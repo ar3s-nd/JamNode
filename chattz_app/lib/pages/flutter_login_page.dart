@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:chattz_app/pages/auth_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/user_services.dart';
@@ -7,8 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_login/flutter_login.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class FlutterLoginPage extends StatelessWidget {
   static const routeName = '/auth';
@@ -124,7 +121,7 @@ class FlutterLoginPage extends StatelessWidget {
             ),
           ),
           // logo: AssetImage('assets/logo.png'), // Add your app logo here
-          titleStyle: TextStyle(
+          titleStyle: const TextStyle(
             color: Colors.white,
             fontSize: 24,
             fontWeight: FontWeight.bold,
