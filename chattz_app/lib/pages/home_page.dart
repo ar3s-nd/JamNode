@@ -400,25 +400,23 @@ class _HomePageState extends State<HomePage>
           ),
           children: [
             // Responsive Icon with Box Shadow
-            Flexible(
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.tealAccent.withOpacity(0.2),
-                      spreadRadius: 0.001,
-                      blurRadius: 100,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Lottie.asset(
-                  'assets/animations/no_jams_yet.json',
-                  backgroundLoading: false,
-                  width: screenWidth * 0.675,
-                  reverse: true,
-                ),
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.tealAccent.withOpacity(0.2),
+                    spreadRadius: 0.001,
+                    blurRadius: 100,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Lottie.asset(
+                'assets/animations/no_jams_yet.json',
+                backgroundLoading: false,
+                width: screenWidth * 0.675,
+                reverse: true,
               ),
             ),
 
@@ -488,6 +486,7 @@ class _HomePageState extends State<HomePage>
                 icon: ImageIcon(
                   const AssetImage('assets/images/add_group.png'),
                   size: screenWidth * 0.065,
+                  color: Colors.black,
                 ),
                 label: Text(
                   groups.isEmpty

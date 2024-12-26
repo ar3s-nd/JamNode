@@ -277,14 +277,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               ],
             ),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white70),
-              onPressed: () {
-                // Group options menu
-              },
-            ),
-          ],
         ),
       ),
     );
