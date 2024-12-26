@@ -1,3 +1,4 @@
+import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/onboarding.dart';
 import 'package:chattz_app/pages/profile_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
@@ -90,7 +91,7 @@ class _MainDrawerState extends State<MainDrawer>
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.8,
+      width: screenWidth * 0.8,
       backgroundColor: Colors.black87,
       child: FadeTransition(
         opacity: _drawerContentsOpacity,

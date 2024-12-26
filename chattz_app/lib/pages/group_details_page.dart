@@ -1,3 +1,4 @@
+import 'package:chattz_app/main.dart';
 import 'package:chattz_app/widgets/group_details_page_body.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
@@ -71,8 +72,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage> {
           centerTitle: true,
         ),
         body: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: screenHeight,
+          width: screenWidth,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,

@@ -3,6 +3,7 @@ import 'package:chattz_app/pages/group_details_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
+import 'package:chattz_app/shimmer/shimmer_chat_page.dart';
 import 'package:chattz_app/widgets/message_bubble.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   Map<String, Map<String, dynamic>> userDetails = {};
   late AnimationController _fabAnimationController;
   late Animation<double> _fabScaleAnimation;
+  bool isLoading = true;
 
   void listenToChatChanges() {
     FirestoreServices().listenToChatChanges(
@@ -33,41 +35,44 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         groupDetails['groupId']);
   }
 
-  void setMessages() async {
+  Future<void> setMessages() async {
+    Map<String, List<Message>> messages = {};
     try {
-      _messages = await FirestoreServices().getChats(groupDetails['groupId']);
+      messages = await FirestoreServices().getChats(groupDetails['groupId']);
     } catch (e) {
       // handle error
     }
+    _messages = messages;
+    debugPrint('Messages: ${_messages.values.last.last.text}');
     if (mounted) {
       setState(() {});
     }
   }
 
-  void setGroupDetails() async {
-    if (mounted && groupDetails.isEmpty) {
-      setState(() {
-        groupDetails = widget.groupDetails;
-      });
-    }
+  Future<void> setGroupDetails() async {
+    Map<String, dynamic> group = widget.groupDetails;
+    debugPrint('Group: $group');
     try {
-      groupDetails = await FirestoreServices()
+      group = await FirestoreServices()
           .getGroupDetailsByGroupId(groupDetails['groupId']);
     } catch (e) {
       // handle error
     }
+    groupDetails = group;
     if (mounted) {
       setState(() {});
     }
   }
 
-  void setUserDetails() async {
+  Future<void> setUserDetails() async {
+    Map<String, Map<String, dynamic>> users = {};
     try {
-      userDetails =
+      users =
           await UserService().getUserDetailsByGroupId(groupDetails['groupId']);
     } catch (e) {
       // handle error
     }
+    userDetails = users;
     if (mounted) {
       setState(() {});
     }
@@ -93,12 +98,24 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     }
   }
 
-  void initialiseChat() {
-    _scrollController.addListener(_scrollListener);
-    setGroupDetails();
-    setUserDetails();
-    setMessages();
-    listenToChatChanges();
+  void initialiseChat() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      FirestoreServices().listenToChatChanges(
+          [setMessages, setGroupDetails, setUserDetails],
+          widget.groupDetails['groupId']);
+      _scrollController.addListener(_scrollListener);
+      setGroupDetails();
+      setUserDetails();
+      setMessages();
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -125,6 +142,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   @override
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      debugPrint(groupDetails.toString());
+      return const ShimmerChatPage();
+    }
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: _buildAnimatedAppBar(),
@@ -411,12 +432,6 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
       ),
       child: Row(
         children: [
-          // IconButton(
-          //   icon: Icon(Icons.add_circle_outline, color: Colors.teal.shade200),
-          //   onPressed: () {
-          //     // Add attachment functionality
-          //   },
-          // ),
           Expanded(
             child: TextField(
               controller: _messageController,
@@ -457,10 +472,22 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
                         senderUserId: userId,
                         timestamp: DateTime.now(),
                       );
+                      String date =
+                          DateTime.now().toIso8601String().split('T').first;
+                      if (_messages.containsKey(date)) {
+                        _messages[date]!.add(message);
+                      } else {
+                        _messages[date] = [message];
+                      }
+                      debugPrint("Messages: ${_messages.keys}");
+
                       FirestoreServices()
                           .addMessage(groupDetails['groupId'], message);
                       _messageController.clear();
                       _scrollToBottom();
+                      if (mounted) {
+                        setState(() {});
+                      }
                     }
                   },
                 ),

@@ -146,7 +146,6 @@ class AnimatedErrorDialog extends StatelessWidget {
                       _buildButton(
                         text: text2,
                         onPressed: () {
-                          debugPrint('Close button pressed');
                           Navigator.pop(context);
                           if (onClose != null) {
                             onClose!();

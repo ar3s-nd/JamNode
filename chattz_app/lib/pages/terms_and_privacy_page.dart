@@ -223,7 +223,6 @@ class _TermsAndPrivacyPageState extends State<TermsAndPrivacyPage>
               },
               onClose: () {
                 FirebaseAuth.instance.signOut();
-                debugPrint('User logged out');
                 Navigator.pushReplacement(
                   context,
                   FadePageRoute(page: const OnboardingPage()),

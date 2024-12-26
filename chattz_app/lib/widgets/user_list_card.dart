@@ -1,4 +1,5 @@
 import 'package:chattz_app/components/image_circle.dart';
+import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/profile_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -123,7 +124,7 @@ class _UserListCardState extends State<UserListCard>
                         ),
                       ),
                     ),
-                    SizedBox(width: MediaQuery.of(context).size.width * 0.031),
+                    SizedBox(width: screenWidth * 0.031),
                     Expanded(
                       child: Text(
                         '${widget.member['name']}${isMe ? ' (You)' : ''}',

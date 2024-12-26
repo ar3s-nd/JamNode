@@ -1,6 +1,5 @@
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 
 class UserService {
   final CollectionReference userCollection =
@@ -11,7 +10,7 @@ class UserService {
     try {
       return await userCollection.doc(id).set(userInfoMap);
     } catch (e) {
-      debugPrint(e.toString());
+      // handle gracefully
     }
   }
 
@@ -45,8 +44,6 @@ class UserService {
     data['gotDetails'] = data['gotDetails'] as bool? ?? false;
     data['groups'] = List<String>.from(data['groups'] ?? ['hello moto']);
     data['skills'] = Map<String, int>.from(data['skills'] ?? {});
-    debugPrint('at parse ${data['name']}');
-    debugPrint(data['groups'].toString());
     Map<String, int> sortedMap = Map.fromEntries(
       data['skills'].entries.toList()
         ..sort((MapEntry<String, int> a, MapEntry<String, int> b) =>
@@ -62,7 +59,6 @@ class UserService {
       DocumentSnapshot documentSnapshot = await userCollection.doc(id).get();
       if (documentSnapshot.exists) {
         var data = documentSnapshot.data() as Map<String, dynamic>;
-        // debugPrint(parse(data).toString());
         return parse(data);
       } else {
         return {
@@ -117,8 +113,7 @@ class UserService {
         }));
       return userMap;
     } catch (e) {
-      // Use a logging framework instead of print
-      debugPrint(e.toString());
+      // handle gracefully
     }
     return Future.value(
       {

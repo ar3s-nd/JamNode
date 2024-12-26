@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:chattz_app/components/main_drawer.dart';
-import 'package:chattz_app/components/shimmer_loading.dart';
 import 'package:chattz_app/main.dart';
 import 'package:chattz_app/pages/chat_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
+import 'package:chattz_app/shimmer/shimmer_home_page.dart';
 import 'package:chattz_app/widgets/group_details_page_body.dart';
 import 'package:chattz_app/widgets/group_list_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,16 +25,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-  Map<String, Map<String, dynamic>> groups = {};
-  Map<String, Map<String, dynamic>> activeGroups = {};
-  Map<String, Map<String, dynamic>> myGroups = {};
-  Map<String, dynamic> userDetails = {};
   String user = 'J';
-  bool isActiveGroupShown = false;
   bool isLoading = true;
   bool isBuiltAsCard = true;
+  bool isActiveGroupShown = false;
+  Map<String, dynamic> userDetails = {};
+  Map<String, Map<String, dynamic>> groups = {};
+  Map<String, Map<String, dynamic>> myGroups = {};
   late AnimationController _iconAnimationController;
+  Map<String, Map<String, dynamic>> activeGroups = {};
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState() {
@@ -49,7 +49,8 @@ class _HomePageState extends State<HomePage>
   Future<void> _loadData() async {
     try {
       await Future.delayed(
-          const Duration(seconds: 1)); // Simulating loading time
+        const Duration(milliseconds: 900),
+      );
       FirestoreServices().listenToGroupChanges(setGroups);
       if (groups.isEmpty) await setGroups();
       if (userDetails.isEmpty) await setUser();
@@ -70,22 +71,21 @@ class _HomePageState extends State<HomePage>
     } catch (e) {
       // handle error
     }
-    if (mounted) {
-      setState(() {
-        groups = newGroups;
-        activeGroups.clear();
-        myGroups.clear();
+    groups = newGroups;
+    activeGroups.clear();
+    myGroups.clear();
 
-        groups.forEach(
-          (key, value) {
-            if (!value['members'].contains(currentUserId)) {
-              activeGroups[key] = value;
-            } else {
-              myGroups[key] = value;
-            }
-          },
-        );
-      });
+    groups.forEach(
+      (key, value) {
+        if (!value['members'].contains(currentUserId)) {
+          activeGroups[key] = value;
+        } else {
+          myGroups[key] = value;
+        }
+      },
+    );
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -96,13 +96,10 @@ class _HomePageState extends State<HomePage>
     } catch (e) {
       // handle error
     }
+    userDetails = newUser;
+    user = newUser['name'];
     if (mounted) {
-      setState(
-        () {
-          userDetails = newUser;
-          user = newUser['name'];
-        },
-      );
+      setState(() {});
     }
   }
 
@@ -181,22 +178,17 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: ShimmerLoading(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-        ),
-      );
+      return const ShimmerHomePage();
     }
 
     return LiquidPullToRefresh(
       animSpeedFactor: 2,
       onRefresh: () async {
         try {
-          await Future.delayed(const Duration(milliseconds: 1500));
+          await Future.delayed(const Duration(milliseconds: 1000));
           await setGroups();
           await setUser();
+          // setState(() {});
         } catch (e) {
           showErrorMessage(e.toString());
         }
@@ -289,8 +281,8 @@ class _HomePageState extends State<HomePage>
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Container(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
+            height: screenHeight,
+            width: screenWidth,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -424,13 +416,13 @@ class _HomePageState extends State<HomePage>
                 child: Lottie.asset(
                   'assets/animations/no_jams_yet.json',
                   backgroundLoading: false,
-                  width: MediaQuery.of(context).size.width * 0.675,
+                  width: screenWidth * 0.675,
                   reverse: true,
                 ),
               ),
             ),
 
-            SizedBox(height: MediaQuery.of(context).size.height * 0.015),
+            SizedBox(height: screenHeight * 0.015),
 
             // Responsive Title
             RichText(
@@ -439,8 +431,7 @@ class _HomePageState extends State<HomePage>
                 text: 'No ',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: MediaQuery.of(context).size.width *
-                      0.07, // Scalable font size
+                  fontSize: screenWidth * 0.07, // Scalable font size
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
                 ),
@@ -449,7 +440,7 @@ class _HomePageState extends State<HomePage>
                     text: 'Jams ',
                     style: TextStyle(
                       color: Colors.tealAccent.shade400,
-                      fontSize: MediaQuery.of(context).size.width * 0.08,
+                      fontSize: screenWidth * 0.08,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1.2,
                     ),
@@ -458,7 +449,7 @@ class _HomePageState extends State<HomePage>
                     text: 'Yet!',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: MediaQuery.of(context).size.width * 0.07,
+                      fontSize: screenWidth * 0.07,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1.2,
                     ),
@@ -467,7 +458,7 @@ class _HomePageState extends State<HomePage>
               ),
             ),
 
-            SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+            SizedBox(height: screenHeight * 0.04),
 
             // Primary Action Button (ElevatedButton)
             FractionallySizedBox(
@@ -496,7 +487,7 @@ class _HomePageState extends State<HomePage>
                 ),
                 icon: ImageIcon(
                   const AssetImage('assets/images/add_group.png'),
-                  size: MediaQuery.of(context).size.width * 0.065,
+                  size: screenWidth * 0.065,
                 ),
                 label: Text(
                   groups.isEmpty
@@ -507,7 +498,7 @@ class _HomePageState extends State<HomePage>
                               ? 'Create Jam'
                               : 'Create Jam',
                   style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.045,
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),

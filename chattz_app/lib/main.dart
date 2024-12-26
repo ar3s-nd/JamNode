@@ -9,6 +9,8 @@ int numberOfGroupsPerPersonGlobal = 5;
 int timeOutForGroupsGlobal = 5;
 List<String> groupNamesGlobal = [];
 List<String> collegeNamesGlobal = [];
+double screenWidth = 0;
+double screenHeight = 0;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,11 +41,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     return const MaterialApp(
-        title: "Chattz",
-        home: AuthPage(),
-        // home: /
-        debugShowCheckedModeBanner: false,
-        color: Colors.grey);
+      title: "Chattz",
+      home: AuthPage(),
+      debugShowCheckedModeBanner: false,
+      color: Colors.grey,
+    );
   }
 }

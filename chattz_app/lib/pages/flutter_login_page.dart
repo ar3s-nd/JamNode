@@ -8,9 +8,8 @@ import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_login/flutter_login.dart';
 
 class FlutterLoginPage extends StatelessWidget {
-  static const routeName = '/auth';
   const FlutterLoginPage({super.key});
-  Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 2000);
+  Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 2250);
 
   Future<void> _uploadData(UserCredential result) async {
     try {
@@ -31,7 +30,6 @@ class FlutterLoginPage extends StatelessWidget {
       await UserService().addUserDetails(userInfoMap, result.user!.uid);
     } catch (e) {
       // handle the error
-      debugPrint(e.toString());
     }
   }
 

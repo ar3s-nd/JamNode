@@ -187,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 horizontalOffset: 50.0,
                 child: FadeInAnimation(
                   child: SkillSlider(
-                    screenWidth: MediaQuery.of(context).size.width,
+                    screenWidth: screenWidth,
                     skill: skill,
                     level: Map<String, int>.from(userData['skills']),
                     onChanged: (String skill, int value) {

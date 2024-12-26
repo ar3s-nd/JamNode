@@ -7,6 +7,7 @@ import 'package:chattz_app/pages/home_page.dart';
 import 'package:chattz_app/routes/fade_page_route.dart';
 import 'package:chattz_app/services/firestore_services.dart';
 import 'package:chattz_app/services/user_services.dart';
+import 'package:chattz_app/shimmer/shimmer_group_details_page.dart';
 import 'package:chattz_app/widgets/user_list_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   bool isUpdating = false;
   TextEditingController controller = TextEditingController();
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -38,10 +40,16 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
 
   void setDetails() async {
     try {
+      await Future.delayed(const Duration(milliseconds: 600));
       if (groupDetails.isEmpty) await setGroupDetails();
       if (members.isEmpty) await setMemberDetails();
     } catch (e) {
       // handle gracefully
+    }
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -53,9 +61,7 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
 
   Future<void> setGroupDetails() async {
     if (mounted && groupDetails.isEmpty) {
-      setState(() {
-        groupDetails = widget.groupDetails;
-      });
+      groupDetails = widget.groupDetails;
       return;
     }
 
@@ -66,7 +72,9 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
       // handle gracefully
     }
     if (mounted) {
-      setState(() {});
+      setState(() {
+        groupDetails = groupDetails;
+      });
     }
   }
 
@@ -81,6 +89,7 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
     } catch (e) {
       // handle gracefully
     }
+    members = userDetails;
     if (mounted) {
       setState(() {
         members = userDetails;
@@ -250,6 +259,10 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const ShimmerGroupDetailsPage();
+    }
+
     return AnimationLimiter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,9 +275,9 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
             ),
           ),
           children: [
-            // Group Image, Name, and Join/Leave Button Section
+            // Group Image, Name
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(left: 16.0, right: 16, top: 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -346,6 +359,34 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
               ),
             ),
 
+            // Group Info: Started On
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              child: Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: Colors.teal.shade600.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined,
+                        color: Colors.teal.shade300),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Jam started on ${groupDetails['createdOn']}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             // Join/Leave Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -381,34 +422,6 @@ class _GroupDetailsPageBodyState extends State<GroupDetailsPageBody> {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
-              ),
-            ),
-
-            // Group Info: Started On
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-              child: Container(
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: Colors.teal.shade600.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_today_outlined,
-                        color: Colors.teal.shade300),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Jam started on ${groupDetails['createdOn']}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),
