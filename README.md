@@ -1,26 +1,17 @@
 # JamNode
  An app where people can display their music profiles, including instruments/vocal skills. It allows people to start 'jam session' so as to find people to jam with.<br>
+ [Watch Video](https://www.youtube.com/watch?v=ucKOv_znnKw)
 <br>
 ## Tech Stack
-<table>
-  <tr>
-    <td align='center'>
-      <a href="https://www.dartlang.org/"> <img width='36' height='36' src='https://img.stackshare.io/service/1646/Twitter-02.png' alt='Dart'> </a>
-      <br>
-      <sub></sub>
-    </td>
-    <td align='center'>
-      <a href="https://flutter.io/"> <img width='36' height='36' src='https://img.stackshare.io/service/7180/flutter-mark-square-100.png' alt='Flutter'> </a>
-      <br>
-      <sub></sub>
-    </td>
-    <td align='center'>
-      <a href="https://firebase.google.com/"><img width='36' height='36' src='https://img.stackshare.io/service/116/cZLxNFZS.jpg' alt='Firebase'> </a>
-      <br>
-      <sub></sub>
-    </td>
-  </tr>
-</table>
+<div>
+	<table>
+		<tr>
+			<td><code><img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/dart.png" alt="Dart" title="Dart"/></code></td>
+			<td><code><img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/flutter.png" alt="Flutter" title="Flutter"/></code></td>
+			<td><code><img width="50" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/firebase.png" alt="Firebase" title="Firebase"/></code></td>
+		</tr>
+	</table>
+</div>
 
 ## Development
 1. Download the [Flutter Development Kit](https://docs.flutter.dev/get-started/install).
